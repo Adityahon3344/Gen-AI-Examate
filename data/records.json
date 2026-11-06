@@ -1,0 +1,142 @@
+[
+    {
+        "id": 1,
+        "scheme_name": "Sub-mission on Farm Mechanization",
+        "department": "Agriculture Department",
+        "benefit": "Financial assistance for purchasing agricultural machinery and implements, including tractors, power tillers, farm equipment, processing units and post-harvest technology.",
+        "eligibility": [
+            "Farmer must have an Aadhaar Card.",
+            "Farmer must have 7/12 extract and 8-A certificate.",
+            "SC/ST farmers must provide a caste certificate.",
+            "Subsidy is payable for only one component, such as a tractor or machinery/equipment.",
+            "If a family member owns a tractor, the farmer may be eligible for tractor-operated equipment with proof of tractor ownership.",
+            "If a benefit has been received for a component, the same component cannot be applied for again for the next 10 years. Another component may still be applied for."
+        ],
+        "required_documents": [
+            "Aadhaar Card",
+            "7/12 Extract",
+            "8-A Certificate",
+            "Quotation for the equipment to be purchased",
+            "Inspection report from a Central Government approved testing institute",
+            "Caste Certificate (for SC/ST applicants)",
+            "Self Declaration",
+            "Prior Approval Letter"
+        ],
+        "source_url": "https://mahadbt.maharashtra.gov.in/Farmer/SchemeData/SchemeData?str=E9DDFA703C38E51A23C0254248DAFF28"
+    },
+    {
+        "id": 2,
+        "scheme_name": "State Agriculture Mechanization Scheme",
+        "department": "Agriculture Department",
+        "benefit": "Financial assistance for purchasing agricultural machinery and implements, including tractors, power tillers, tractor or power tiller operated implements, bullock-operated and manually operated equipment, processing units, post-harvest technology and horticulture machinery.",
+        "eligibility": [
+            "Farmer must have an Aadhaar Card.",
+            "Farmer must have a 7/12 extract and 8-A certificate.",
+            "SC/ST farmers must provide a caste certificate.",
+            "Subsidy is payable for only one implement, such as a tractor or machinery/equipment.",
+            "If a family member owns a tractor, the farmer may qualify for tractor-operated implements by providing proof of tractor ownership.",
+            "If a benefit has been received for a component, the same component cannot be applied for again for the next 10 years. Another component may still be applied for."
+        ],
+        "required_documents": [
+            "Aadhaar Card",
+            "7/12 Extract",
+            "8-A Certificate",
+            "Quotation for the equipment to be purchased",
+            "Inspection report from a Central Government approved testing institute",
+            "Caste Certificate (for SC/ST applicants)",
+            "Self Declaration",
+            "Prior Approval Letter"
+        ],
+        "source_url": "https://mahadbt.maharashtra.gov.in/Farmer/SchemeData/SchemeData?str=E9DDFA703C38E51A147B39AD4D6A9082"
+    },
+    {
+        "id": 3,
+        "scheme_name": "Birsa Munda Krishi Kranti Yojana",
+        "department": "Agriculture Department",
+        "benefit": "Financial assistance for irrigation and agricultural development. Benefits include new irrigation wells (up to Rs. 4,00,000), old well repairs (up to Rs. 1,00,000), farm pond lining, in-well boring, pumps, solar pumps, HDPE/PVC pipes, micro-irrigation, agricultural implements and kitchen gardens. Benefit limits vary by component for 2026-27.",
+        "eligibility": [
+            "Applicant must be a farmer belonging to the Scheduled Tribe (ST) category.",
+            "A valid caste certificate issued by the competent authority is required.",
+            "Farmer ID and landholding records (7/12 and 8-A extracts) are required for the specified areas outside municipal limits."
+        ],
+        "required_documents": [
+            "Farmer ID (7/12 and 8-A extracts)",
+            "Valid Caste Certificate",
+            "Disability Certificate (if applicable)",
+            "Consent Letter / Undertaking",
+            "MSEDCL Quotation / Test Report (for specified components)"
+        ],
+        "source_url": "https://mahadbt.maharashtra.gov.in/Farmer/SchemeData/SchemeData?str=E9DDFA703C38E51ACA98B76653871714"
+    },
+    {
+        "id": 4,
+        "scheme_name": "Birsa Munda Krishi Kranti Yojana",
+        "department": "Agriculture Department",
+        "benefit": "Financial assistance for irrigation and agricultural development. Benefits include new irrigation wells (up to Rs. 4,00,000), old well repairs (up to Rs. 1,00,000), farm pond lining, in-well boring, pumps, solar pumps, HDPE/PVC pipes, micro-irrigation, agricultural implements and kitchen gardens. Benefit limits vary by component for 2026-27.",
+        "eligibility": [
+            "Applicant must be a farmer belonging to the Scheduled Tribe (ST) category.",
+            "A valid caste certificate issued by the competent authority is required.",
+            "Farmer ID and landholding records (7/12 and 8-A extracts) are required for the specified areas outside municipal limits."
+        ],
+        "required_documents": [
+            "Farmer ID (7/12 and 8-A extracts)",
+            "Valid Caste Certificate",
+            "Disability Certificate (if applicable)",
+            "Consent Letter / Undertaking",
+            "MSEDCL Quotation / Test Report (for specified components)"
+        ],
+        "source_url": "https://mahadbt.maharashtra.gov.in/Farmer/SchemeData/SchemeData?str=E9DDFA703C38E51ACA98B76653871714"
+    },
+    {
+        "id": 5,
+        "scheme_name": "PMRKVY - Rainfed Area Development (RAD)",
+        "department": "Agriculture Department",
+        "benefit": "Maximum financial assistance of Rs. 30,000 per farm family for eligible components. Additional benefits may be available through convergence with other schemes. Rs. 10,000 per project is provided for capacity building and human resource development through SRLM, SHGs and CRPs. Farm size is not a limiting factor.",
+        "eligibility": [
+            "All 34 districts of Maharashtra are covered.",
+            "Projects are selected through a cluster-based approach.",
+            "Each project cluster must cover at least 20 hectares.",
+            "Beneficiary must be willing to adopt Integrated Farming System (IFS) practices.",
+            "Beneficiary bank account must be Aadhaar-linked.",
+            "Farmer ID (AgriStack) is mandatory.",
+            "SC/ST beneficiaries must attach a self-attested valid caste certificate.",
+            "Priority is given to women and disabled farmers.",
+            "Beneficiaries from villages under Dharti Aaba Tribal Upliftment are eligible.",
+            "At least two IFS components are mandatory.",
+            "At least two allied agricultural activity components are mandatory."
+        ],
+        "required_documents": [
+            "Farmer ID (AgriStack)",
+            "Aadhaar-linked Bank Account Details",
+            "Self-attested Caste Certificate (for SC/ST beneficiaries)"
+        ],
+        "source_url": "https://mahadbt.maharashtra.gov.in/Farmer"
+    },
+    {
+        "id": 6,
+        "scheme_name": "Dr. Babasaheb Ambedkar Krushi Swavalamban Yojana",
+        "department": "Agriculture Department",
+        "benefit": "Financial assistance for irrigation and agricultural development. Eligible components include new irrigation wells, old well repairs, farm pond plastic lining, in-well boring, pump sets, electricity connections, drip and sprinkler irrigation, HDPE/PVC pipes, kitchen gardens and agricultural machinery. Assistance depends on the component and applicable guidelines.",
+        "eligibility": [
+            "Applicant must be a Scheduled Caste or Neo-Buddhist farmer.",
+            "Valid caste certificate is required.",
+            "7/12 and 8-A land records must be available in the farmer's name.",
+            "Applicant must have an Aadhaar Card.",
+            "Bank account must be linked to Aadhaar.",
+            "Landholding conditions generally specify a minimum of 0.40 hectare and maximum of 6 hectares.",
+            "Gram Sabha recommendation may be required."
+        ],
+        "required_documents": [
+            "Aadhaar Card",
+            "Caste Certificate",
+            "7/12 Extract",
+            "8-A Extract",
+            "Bank Passbook",
+            "Disability Certificate (if applicable)",
+            "Consent Form (where applicable)",
+            "Groundwater Survey and Water Availability Certificate",
+            "Gram Sabha Resolution"
+        ],
+        "source_url": "https://mahadbt.maharashtra.gov.in/Farmer/SchemeData/SchemeData?str=E9DDFA703C38E51A986837A04E50D9EF"
+    }
+]

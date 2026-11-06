@@ -1,0 +1,1748 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <!--[if IE]>
+       <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+       <meta http-equiv="cache-control" content="no-cache, no store" />
+       <meta http-equiv="cache-control" content="private" />
+       <meta http-equiv="cache-control" content="must-revalidate" />
+       <meta http-equiv="cache-control" content="post-check=0" />
+       <meta http-equiv="cache-control" content="pre-check=0" />
+       <meta http-equiv="pragma" content="no-cache" />
+    <![endif]-->
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=10" />
+    <title>SchemeData</title>
+    <meta name="viewport" id="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1">
+    <link href="/Farmer/favicon.ico" rel="shortcut icon" type="image/x-icon" />
+    <meta http-equiv="cache-control" content="no-cache, no store" />
+    <meta http-equiv="cache-control" content="private" />
+    <meta http-equiv="cache-control" content="must-revalidate" />
+    <meta http-equiv="cache-control" content="post-check=0" />
+    <meta http-equiv="cache-control" content="pre-check=0" />
+    <meta http-equiv="pragma" content="no-cache" />
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="viewport" content="width=device-width" />
+    <link rel="stylesheet" href="/Farmer/Content/bootstrap.min.css">
+    <link href="/Farmer/Content/jquery.mmenu.all.css" rel="stylesheet" />
+    <link href="/Farmer/Content/jquery-ui.css" rel="stylesheet" />
+    <link href="/Farmer/Content/jquery-ui-1.9.2.custommin.css" rel="stylesheet" />
+    <link rel="stylesheet" href="/Farmer/Content/font-awesome.min.css">
+    <link rel="stylesheet" href="/Farmer/Content/animate.min.css">
+
+        <link href="/Farmer/Content/LayoutEN.css" rel="stylesheet" />
+
+    <link rel="stylesheet" href="/Farmer/Content/easy-responsive-tabs.css" />
+    <link href="/Farmer/Content/Style.css" rel="stylesheet" />
+    <link rel="stylesheet" href="/Farmer/Content/layout.css">
+    <link href="/Farmer/Content/bootstrap-iso.css" rel="stylesheet" />
+    <script src="/Farmer/Scripts/bootstrap-datepicker.min.js"></script>
+    <link href="/Farmer/Content/bootstrap-datepicker3.css" rel="stylesheet" />
+    <link href="/Farmer/Scripts/sweetalert2.css" rel="stylesheet" type="text/css" />
+    <script src="/Farmer/Scripts/sweet-alert2.min.js" type="text/javascript"></script>
+    <script src="/Farmer/Scripts/modernizr.js"></script>
+    <link href="/Farmer/Content/loader.css" rel="stylesheet" />
+    
+    <script type="text/javascript" src="/Farmer/Scripts/jquery-3.6.0.min.js"></script>
+    <script src="/Farmer/Scripts/jquery-ui.min.js"></script>
+    <script src="/Farmer/Scripts/demo.js" type="text/javascript"></script>
+    <script src="/Farmer/Scripts/jquery.mmenu.all.js"></script>
+    
+    <script src="/Farmer/Scripts/custom.js" type="text/javascript" defer></script>
+    
+    
+    <script type="text/javascript">
+        function preventBack() { window.history.forward(); }
+        setTimeout("preventBack()", 0);
+        window.onunload = function () { null };
+    </script>
+    <noscript>
+        <META HTTP-EQUIV="Refresh" CONTENT="0;URL=../ShowErrorPage.html">
+    </noscript>
+    <script type="text/javascript">
+
+        // keyCode 116 is for page refresh  F5
+        // keyCode 123 is for F12
+        // keyCode 73 is for ctrl +shift + i  = F12
+        // keyCode 74 is for ctrl +shift + j  = F12
+        window.oncontextmenu = function () {
+            return false;
+        }
+        $(document).keydown(function (event) {
+            if (event.keyCode == 123 || event.keyCode == 116) {
+                return false;
+            }
+            else if ((event.ctrlKey && event.shiftKey && event.keyCode == 73) || (event.ctrlKey && event.shiftKey && event.keyCode == 74)) {
+                return false;
+            }
+        });
+
+    </script>
+    <!--[if IE]>
+        <script type="text/javascript" src="../Scripts/respond.min.js"></script>
+        <script type="text/javascript" src="../Scripts/html5shiv.js"></script>
+    <![endif]-->
+
+    <style>
+        #divLoadingImg {
+            position: absolute;
+            background: rgba(255,255,255,.4);
+            width: 100%;
+            height: 100%;
+            z-index: 999999;
+        }
+
+            #divLoadingImg img {
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                transform: -webkit-translate(-50%, -50%);
+                transform: -moz-translate(-50%, -50%);
+                transform: -ms-translate(-50%, -50%);
+                position: fixed;
+                z-index: 999998;
+            }
+
+        .videos li {
+            border-bottom: 1px dotted #ddd;
+            padding: 8px 0 8px 15px;
+            margin-left: 0;
+            margin-bottom: 0;
+        }
+
+            .videos li:before {
+                content: "\f008";
+                font-family: fontawesome;
+                padding-right: 15px;
+                float: left;
+            }
+
+        .maha-guidline {
+            margin-bottom: 10px;
+        }
+
+        .classserver {
+            background-color: white;
+            color: white;
+        }
+
+        .mm-page {
+            position: inherit;
+        }
+
+        .modal-dialog {
+            width: 800px;
+        }
+    </style>
+    <style>
+        #blink {
+            /*font-size: 20px;
+            font-weight: bold;*/
+            color: red;
+            transition: 0.05s;
+        }
+    </style>
+
+    <script type="text/javascript">
+        (function ($) {
+            $('body').on('hidden', '.modal', function () {
+                $(this).removeData("modal");
+            });
+        })(jQuery);
+
+        $(document).ready(function () {
+            //Added by vishal for Lottery Result display
+            GetLatestLotteryDates();
+
+            function GetLatestLotteryDates() {
+                
+                var URL = '/Farmer/' + 'Login/GetLatestLotteryDates';
+                $.ajax({
+                    url: URL,
+                    type: 'POST',
+                    success: function (data) {
+                        debugger;
+                        if (data != null && data != "") {
+                            var body = "";
+                            $.each(data, function (a) {
+                                if (data[a].Language == "1") {      //Added by vishal for LotteryPDF
+                                    body = body + "<p>" + "<a style='color:red;cursor:pointer' href='/Farmer/Login/CreateLotteryPDF?lotteryCycle=" + data[a].lotteryCycle + "'>Online Lottery List of Various Schemes of Agriculture Department: Dated - " + data[a].LotteryDate + "</a>" + "</p>"
+                                }
+                                else if (data[a].Language == "2") {
+                                    body = body + "<p>" + "<a style='color:red;cursor:pointer' href='/Farmer/Login/CreateLotteryPDF?lotteryCycle=" + data[a].lotteryCycle + "'>कृषि विभागाच्या विविध योजनांची ऑनलाईन सोडत यादी: दिनांक - " + data[a].LotteryDate + "</a>" + "</p>"
+                                }
+                            })
+                            $("#div_latestlotterydtls").html(body);
+                            $("#div_latestlotterydtlsMR").html(body);
+                        }
+                        //else {
+                        //    alert("No Data Found.");
+                        //}
+                    },
+                    error: function (exception) {
+                        console.log(exception.responseText);
+                        //alert(exception.responseText);
+                    }
+                });
+            }
+
+            FinalResult = window.location.host;
+            $("#HrefLink").attr("href", "https://" + FinalResult);
+        });
+    </script>
+</head>
+<body class="animated fadeIn">
+    <div id="page">
+        <div>
+            
+                                </div>
+        <div id="divLoadingImg" hidden>
+            <img src="/Farmer/Images/loader.gif" />
+        </div>
+
+        <div class="global-wrapper clearfix" id="global-wrapper">
+            <div class="row m0 topHeader">
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-sm-12 top_menu">
+                            <ul class="list-inline pull-left">
+                                <li><a href="#skipContent"><i class="fa fa-pencil"></i>Skip To Main Content</a></li>
+                                <li><a href="#skipNav"><i class="fa fa-location-arrow" aria-hidden="true"></i>Skip To Navigation</a></li>
+                            </ul>
+                            <ul class="list-inline">
+                                
+
+                                <li class="home-btn"><a id="HrefLink" href=""><i class="fa fa-home" aria-hidden="true"></i>Main Home</a></li>
+
+                                <li class="hidden-xs">
+                                    <div class="font-resize">
+                                        
+
+
+                                        <a href="#" class="" data-original-title="" id="btn-increase" title="" style="left: -2px;">A+</a>
+                                        <a href="#" class="" data-original-title="" id="btn-orig" title="">A=</a>
+                                        <a href="#" class="" data-original-title="" id="btn-decrease" title="" style="left: 59px;">A-</a>
+                                    </div>
+                                </li>
+                                <li>
+                                    
+                                    <div class="input-group-btn languageFilters filterGroup">
+<a href="/Farmer/Home/ChangeLanguage?lang=mr">मराठी</a>                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="header">
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-sm-4 col-xs-12">
+                            <a target="_blank" href="https://www.india.gov.in/" class="mol">
+                                <img src="/Farmer/Images/national-emblem.png" alt="MahaOnline">
+                            </a><a target="_blank" href="https://www.maharashtra.gov.in" class="gom-1">
+                                <img title="Government of Maharashtra" src="/Farmer/Images/LogoGOM.png" alt="Government of Maharashtra">
+                            </a>
+                        </div>
+                        <div class="col-sm-4 col-xs-12 dbt-logo">
+                            <ul>
+                                <li><img src="/Farmer/Images/DBT.png" alt="DBT"></li>
+                            </ul>
+                        </div>
+                        
+                        <div class="clearfix">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <a name="skipNav"></a>
+            <div class="navbar yamm navbar-default">
+                <div class="navbar-header">
+                    <button type="button" data-toggle="collapse" data-target="#navbar-collapse-1" class="navbar-toggle">
+                        <span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar">
+                        </span>
+                    </button>
+                </div>
+                <div id="navbar-collapse-1" class="navbar-collapse collapse">
+                        <ul class="nav navbar-nav">
+                            <li class="mas">
+                                <span>
+                                    <a href="#">
+                                        How to
+                                        <br />
+                                        Apply Online ?
+                                    </a>
+                                </span>
+                            </li>
+                            <li class="beneschemebu arrow_box">Benefit<br /> Schemes </li>
+                        </ul>
+                    <div id="main">
+                        <div id="main2">
+                            <div id="navMenu">
+                                <div id="navMenu-wrapper">
+                                    
+
+
+<style>
+    .isDisabled {
+        color: currentColor;
+        cursor: not-allowed;
+        opacity: 0.5;
+        text-decoration: none;
+    }
+</style>
+<ul id="navMenu-items" class="nav" style="">
+        <li class="navMenu-item active dropdown">
+            <a href="#" data-toggle="dropdown" class="dropdown-toggle">
+                <img src="../Images/farmer02.png" alt="Farmer" />
+                
+                Farmer Schemes
+            </a>
+
+            <ul class="dropdown-menu">
+                <li>
+                    <div class="yamm-content">
+                        <div class="parentVerticalTab">
+                            <ul class="resp-tabs-list hor_1">
+
+
+                                
+
+                                
+
+                                <li>Farmer Schemes</li>
+                                
+
+
+                            </ul>
+
+                            <div class="resp-tabs-container hor_1">
+
+                                
+                                <div>
+                                    <ul class="list">
+                                            <li><a href="/Farmer/SchemeData/SchemeData?str=E9DDFA703C38E51AC7B56240D6D84F28">Pradhan Mantri Krishi Sinchayee Yojana - Per Drop More Crop (Micro-irrigation Component)</a></li>
+                                            <li><a href="/Farmer/SchemeData/SchemeData?str=E9DDFA703C38E51A23C0254248DAFF28">Sub-mission on Farm Mechanization</a></li>
+                                            <li><a href="/Farmer/SchemeData/SchemeData?str=E9DDFA703C38E51A64CDF3CE7D352F8F">National Food Security Mission: Food grains, Oil seeds, Sugarcane and Cotton</a></li>
+                                            <li><a href="/Farmer/SchemeData/SchemeData?str=E9DDFA703C38E51ACA98B76653871714">Birsa Munda Krishi Kranti Yojana (Tribal Sub Plan / Outside Tribal Sub Plan)</a></li>
+                                            <li><a href="/Farmer/SchemeData/SchemeData?str=E9DDFA703C38E51A986837A04E50D9EF">Dr. Babasaheb Ambedkar Krushi Swavalamban Yojana</a></li>
+                                            <li><a href="/Farmer/SchemeData/SchemeData?str=E9DDFA703C38E51AF823840F3424F82E">Mission for Integrated Development of Horticulture</a></li>
+                                            <li><a href="/Farmer/SchemeData/SchemeData?str=E9DDFA703C38E51A22D675CB15830876">Rainfed Area Development Programme</a></li>
+                                            <li><a href="/Farmer/SchemeData/SchemeData?str=E9DDFA703C38E51AD8FABF0B538FA508">Bhausaheb Fundkar Phalbaag Lagvad Yojana</a></li>
+                                            <li><a href="/Farmer/SchemeData/SchemeData?str=E9DDFA703C38E51AD2B59110D39A6B05">Rashtriya Krushi Vikas Yojana - RAFTAAR</a></li>
+                                            <li><a href="/Farmer/SchemeData/SchemeData?str=E9DDFA703C38E51A147B39AD4D6A9082">State Agriculture Mechanization Scheme</a></li>
+                                            <li><a href="/Farmer/SchemeData/SchemeData?str=E9DDFA703C38E51A62CEFB7856E29C24">Chief Minister Sustainable Agriculture Irrigation Scheme</a></li>
+                                            <li><a href="/Farmer/SchemeData/SchemeData?str=E9DDFA703C38E51AB73A8DEE20C41691">Chief Minister Sustainable Agriculture Irrigation Scheme – Individual Farm Pond</a></li>
+                                            <li><a href="/Farmer/SchemeData/SchemeData?str=E9DDFA703C38E51AD61F6F45B7D0D582">RKVY Plastic Lining to Farm Pond</a></li>
+                                            <li><a href="/Farmer/SchemeData/SchemeData?str=E9DDFA703C38E51ABCB57D16990D3318">Dr. Shyamprasad Mukherjee Jan-Van Vikas Scheme</a></li>
+                                            <li><a href="/Farmer/SchemeData/SchemeData?str=E9DDFA703C38E51A1DD809A4CDCCB84A">PMRKVY-Rainfed Area Development</a></li>
+                                            <li><a href="/Farmer/SchemeData/SchemeData?str=E9DDFA703C38E51A41E9076B9F87E641">Gopinath Munde Shetkari Apghat Suraksha Sanugrah Anudan Yojana</a></li>
+                                            <li><a href="/Farmer/SchemeData/SchemeData?str=E9DDFA703C38E51AA76CB4993576E544">Kaju Kalam Vatap Yojana</a></li>
+                                    </ul>
+                                </div>
+                                
+
+                            </div>
+
+
+
+
+                        </div>
+                    </div>
+                </li>
+            </ul>
+        </li>
+
+    
+    <li class="navMenu-item active hidden">
+        <a data-toggle="" class="isDisabled">
+            <img src="" alt="" />
+            
+            Student
+        </a>
+    </li>
+    
+
+    
+
+
+</ul>
+
+
+                                    <div class="navMenu-paddles">
+                                        <button class="navMenu-paddle-left icon-chevronleft" aria-hidden="true"></button>
+                                        <button class="navMenu-paddle-right icon-chevronright" aria-hidden="true"></button>
+                                    </div>
+                                    <div class="clearfix">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!--marquee start-->
+            <div class="col-md-3 col-xs-12 col-custom-l"></div>
+                <div class="col-md-6 col-xs-12 col-custom-m">
+
+                    
+                </div><div class="clearfix"></div>
+            <!--marquee end-->
+            <a name="skipContent"></a>
+            <section class="main">
+                <div class="container-fluid row">
+                        <div class="col-md-3 col-xs-12 col-custom-l">
+                            <div class="panel panel-default news">
+                                <h2>
+                                    <i class="fa fa-bell-o" aria-hidden="true"></i>Notice
+                                </h2>
+                                
+                                <div>
+                                    
+                                    <p style="color:red;cursor:pointer;padding:5px;">
+                                        <img border="0" src="/Farmer/Images/new_banner.gif" width="40" height="20" /><b>Important Notification for Farmers :</b><br /><br />
+                                        Dear Farmers,<br /> The MahaDBT Farmer Portal will soon be reopened, allowing farmers to register afresh and apply for various components under the Department of Agriculture’s schemes. From the year 2025–26 onwards, the "First Come, First Served" approach will be used for application selection. Applications submitted earlier will be considered first under this selection process. You can check the status of your application in the list by clicking on the link provided below titled "Application Timestamp Report." If you have any questions or concerns regarding this list, you may contact the helpline number 022-61316429 between 9:00 AM to 7:00 PM (Monday to Friday).
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            <div class="panel panel-default text-center" style="background-color:#7ac418">
+                                <a href="/Farmer/Login/TrackApplicationStatus" style="color:white;cursor:pointer"><h4>Track Application Status</h4></a>
+                            </div>
+                            <div class="panel panel-default text-center" style="background-color:#7ac418">
+                                <a href="/Farmer/Login/LotteryReport" style="color:white;cursor:pointer"><h4>Lottery List</h4></a>
+                            </div>
+                            <div class="panel panel-default text-center" style="background-color:#7ac418">
+                                <a href="/Farmer/Login/FundDisbursedReport" style="color:white;cursor:pointer"><h4>Fund Disbursed Beneficiary List</h4></a>
+                            </div>
+                            <div class="panel panel-default text-center" style="background-color:#7ac418">
+                                <a href="/Farmer/Login/ApplicationTimestampReport" style="color:white;cursor:pointer"><h4>Application Timestamp Report</h4></a>
+                            </div>
+                            
+                            <div class="text-center applink">
+                                <a href="https://play.google.com/store/apps/details?id=com.mahadbtagri" target="_blank"><img src="/Farmer/Images/applinkimg.jpg" alt="Join Us on Mobile" width="100%" /></a>
+                            </div>
+                            
+
+                        </div>
+                    <div class="col-md-6 col-xs-12 col-custom-m">
+                        
+
+
+
+
+
+<script type="text/javascript">
+    window.onload = function () {
+        $("#wait").hide();
+    };
+</script>
+
+<div class="col-sm-12 col-xs-12">
+    <div class="box-panel">
+            <div class="pagetitle">
+                <h1>Sub-mission on Farm Mechanization</h1>
+            </div>
+            <div class="row">
+                <div class="col-md-8">
+                    <h2>About Scheme</h2>
+                    <hr />
+                    <h3>Department Name</h3>
+                    <p>Agriculture Department</p>
+                    <hr />
+                    <h3>Overview</h3>
+                    <ul class="list">
+                        To promote the usage of Farm Mechanization and increase the ratio of farm power to cultivable unit area up to 2 Kw/Ha.<br><br>
+<b>Mission Objectives:</b><br>
+Increasing the reach of Farm Mechanization to small and marginal farmers and to the regions where availability of farm power is low.<br>
+Creating awareness among the Stakeholders through demonstration and capacity building activities.<br><br>
+<b>Mission Strategy:</b><br>
+Provide financial assistance to farmers for procurement of Farm Machinery and Implements.<br>
+Promote Farm Mechanization among Stakeholders by way of on-field and off-field training and demonstrations.
+                    </ul>
+                    <h />
+                    <h3>Benefit</h3>
+                    <ul class="list">
+                        For Benefits Provided Please Refer Below Document.<br>
+<a href="../PDF/Benefit_SubmissionOnFarmMechanization.pdf" target="_blank" class="btn btn-info">View Benefits</a>
+
+                    </ul>
+                    <hr />
+                    <h3>Eligibility</h3>
+                    <ul class="list">
+                        <li> Farmer should have Aadhaar Card. </li>
+<li> Farmer should have 7/12 certificate and 8 –A certificate. </li>
+<li> If farmer belongs to SC, ST caste category then required caste certificate. </li>
+<li> The Subsidy is payable for only one component i.e. Tractor or Device/Equipment to the farmer. </li>
+<li> If there is a tractor in the name of the parents of the family or unmarried member of same family and if any member of same family has applying for tractor running device/equipment then he will be eligible for benefit but he needs to upload proof of having tractor. </li>
+<li> If farmer has benefitted for any component/equipement then he/she will not eligible to apply same component/equipement for next 10 years but he can apply another component. <br>
+For Ex- If farmer has applied "Tractor" for the year 2018-19 then he will not eligible to apply "Tractor" for next 10 years but from next year 2019-20 he can apply another component like "Power Tiller", "Tractor/Power Tiller Operated Machinery".</li>
+
+                    </ul>
+                    <hr />
+                    
+                    <h3>Required Documents</h3>
+                    <ul class="list">
+                        <li> Aadhaar Card </li>
+<li> 7/12 Certificate </li>
+<li> 8-A Certificate </li>
+<li> Quotation  of the equipment/tools to be purchased  and the  testing certificate of the Central Government approved agency </li>
+<li> Caste Certificate for SC,ST beneficiaries </li>
+<li> Self Declaration </li>
+<li> Pre Sanction Letter </li>
+                    </ul>
+                    <hr />
+                </div>
+                <div class="col-md-4">
+                    
+                        <div class="panel panel-body panel-default">
+                            <h2>Related Documents</h2>
+                            <hr />
+                            
+                            <ul class="list">
+                                    <li><a target="_blank" href="/Farmer/PDF/Scheme-SubMissionOnFarmMechanization.pdf"> Government Resolution </a></li>
+                            </ul>
+                        </div>
+                </div>
+            </div>
+    </div>
+</div>
+
+                    </div>
+                    <div class="col-md-3 col-xs-12 col-custom-r">
+
+                            <div>
+                                <div class="box-link">
+                                             
+                                    
+                                </div>
+                                <div class="box-link">
+                                    <a href='/Farmer/Login/Login'> <i class="fa fa-unlock-alt" aria-hidden="true"></i>Applicant Login</a>
+                                </div>
+                                
+                                <div class="box-link new-reg">
+                                    <a href='/Farmer/Grievance_Farmer/Grievance_Farmer'><i class="fa fa-commenting" aria-hidden="true"></i>Grievance / Suggestions</a>
+                                </div>
+                            </div>
+                            <div class="maha-guidline">
+                                <h2>
+                                    <i class="fa fa-file-text-o" aria-hidden="true"></i>User Manuals
+                                </h2>
+                                <ul>
+                                    <li><a href="/Farmer/PDF/Aaple_Sarkar_DBT_Portal_User_Manual.pdf" target="_blank">Help File for Online Application Process</a></li>
+                                    <li><a href="/Farmer/PDF/Pop_Up_Blocker.pdf" target="_blank">Pop Up Blocker Guidance</a></li>
+                                    <li><a href="/Farmer/PDF/Forgot_Password.pdf" target="_blank">Forgot Password</a></li>
+                                    <li><a href="/Farmer/PDF/Forgot_Username.pdf" target="_blank">Forgot Username</a></li>
+                                    <li><a href="/Farmer/PDF/Aadhaar-seeding-process.pdf" target="_blank">Aadhaar seeding with NPCI mapping form</a></li>
+                                    <li><a href="/Farmer/PDF/How_to_check_for_aadhar_seeding_with_bank.pdf" target="_blank">Check for Bank Aadhaar Mapping Process</a></li>
+                                    
+                                    <li><a href="/Farmer/PDF/Upload_Photo.pdf" target="_blank">Instruction for Croping Photo and Signature</a></li>
+                                    <li><a href="/Farmer/PDF/DBT_Farmer_User_Manual.pdf" target="_blank">Farmer User Manual</a></li>
+                                </ul>
+                                <div class="clearfix">
+                                </div>
+                            </div>
+                            <div class="box-link new-reg">
+                                <a href='/Farmer/Grievance_Farmer/Grievance_Faqdetails'><i class="fa fa-comments-o" aria-hidden="true"></i>Frequently Asked Questions</a>
+                            </div>
+                            <div class="box-link new-reg">
+                                <a><i class="fa fa-phone-square" aria-hidden="true"></i>Helpline Number<br /> 022-61316429</a>
+                            </div>
+                            <div class="box-link new-reg ">
+                                <a><span style="font-size:1em;"> Office Working Hours:  </span><br><span style="font-size:1em;">9.45 am to 6.15 pm.</span></a>
+                            </div>
+
+                    </div>
+
+                </div>
+
+            </section>
+            <footer class="main-footer">
+                <div class="container-fluid">
+                    <div class="row">
+                            <div class="col-md-6 col-xs-12">
+                                <ul class="footer-links">
+                                    <li><a href="#">Terms & Condition</a> </li>
+                                    <li><a href='/Farmer/Grievance_Farmer/Grievance_Faqdetails'>FAQ</a> </li>
+                                    <li><a href='/Farmer/Login/PrivacyPolicy'>Privacy Policy</a> </li>
+                                </ul>
+
+                            </div>
+                        <div class="col-md-4 col-xs-12">
+                                <div class="col-md-12 col-xs-12">
+                                    <p class="copyright-text">
+                                        Copyright MahaIT. All Rights Reserved.
+                                        
+                                        <span class="classserver">(B)</span>
+                                    </p>
+                                </div>
+                        </div>
+                        <div class="col-md-2 col-xs-12">
+                            <a href="https://mahait.org/" target="_blank"><img src="/Farmer/Images/Maha_IT_logo.png" class="MAHAIT-logo" alt="" /></a>
+                        </div>
+                    </div>
+                </div>
+            </footer>
+            <div id="sidebarCollapse2">
+    <nav id="menu">
+        <div id="panel-menu">
+            <ul>
+                <li>
+                    <span>Online Registration</span>
+                    <div>
+                        <h2>Online Registration</h2>
+                        <p>Applicants will be able to register themselves through online registration process.</p>
+
+                        <p>Online Registration done through the website<a href="http://www.aaplesarkardbt.gov.in" target="_blank"> http://www.aaplesarkardbt.gov.in </a> from any of the internet access point.</p>
+
+                        <p>The new user to Register into the portal, click on ―New Applicant Registration button</p>
+                        <p style="text-align:center"><img src="../Images/help/online-reg.jpg" width="293" height="253" style="box-shadow: #cecaca 5px 5px 5px;" /></p>
+
+                    </div>
+                </li>
+                <li>
+                    <span>Registration using Aadhaar Number</span>
+                    <div>
+                        <h2>Registration using Aadhaar Number</h2>
+                        <h3>Registration process explained below.</h3>
+                        <p style="text-align:center"><img src="../Images/help/new-reg-help.jpg" width="293" height="189" style="box-shadow: #cecaca 5px 5px 5px;" /></p>
+                        <div>
+
+                            <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+                                <div class="panel panel-default">
+                                    <div class="panel-heading" role="tab" id="headingOne">
+                                        <h4 class="panel-title">
+                                            <a data-toggle="collapse" data-parent="#accordion" href="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                                                Step 1 - Do You Have Aadhaar Card?
+                                            </a>
+                                        </h4>
+
+                                    </div>
+                                    <div id="collapseOne" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingOne">
+                                        <div class="panel-body">
+                                            <p>Please select ―Yes and click on Continue button to continue with Registration process.</p>
+
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="panel panel-default">
+                                    <div class="panel-heading" role="tab" id="headingTwo">
+                                        <h4 class="panel-title">
+                                            <a class="collapsed" data-toggle="collapse" data-parent="#accordion" href="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                                                Step 2 - Choose Authentication Type
+                                            </a>
+                                        </h4>
+
+                                    </div>
+                                    <div id="collapseTwo" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingTwo">
+                                        <div class="panel-body">
+                                            <p>
+                                                There are two types of authentication available.
+                                                OTP - If the mobile number registered with Aadhaar, then the user can select the
+                                                authentication type ―OTP
+                                            </p>
+                                            <p>Biometric – If the mobile no not registered with Aadhaar, then the user can select the authentication type as Biometric.</p>
+                                            <p>If your Mobile Number registered with Aadhaar, then choose the authentication type as ―OTP.</p>
+                                            <p>Tick on the consent check box to agree to share your information with Maharashtra government for DBT purpose</p>
+                                            <p style="text-align:center"><img src="../Images/help/new-reg-help2.jpg" width="353" height="203" style="box-shadow: #cecaca 5px 5px 5px;" /></p>
+                                            <p>Enter Aadhaar number and click on “Send OTP” button. The system validates the aadhaar number  and sends the system generated “OTP” to the registered mobile number</p>
+                                            <p style="text-align:center"><img src="../Images/help/new-reg-help3.jpg" width="334" height="295" style="box-shadow: #cecaca 5px 5px 5px;" /></p>
+                                            <p>An alert message displayed saying that – OTP for Aadhaar authentication has been sent to your Aadhaar linked registered Mobile number. Click on OK button.</p>
+                                            <p style="text-align:center"><img src="../Images/help/new-reg-help4.jpg" width="334" height="199" style="box-shadow: #cecaca 5px 5px 5px;" /></p>
+                                            <p>Enter the received OTP in the system and click on ―Verify OTP‖ button</p>
+                                            <p>Post successful OTP verification an alert message ―Authentication Successful! Please click on Continue‖ will be displayed on the screen. Click on OK button to continue with registration</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="panel panel-default">
+                                    <div class="panel-heading" role="tab" id="headingThree">
+                                        <h4 class="panel-title">
+                                            <a class="collapsed" data-toggle="collapse" data-parent="#accordion" href="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                                                Step 3
+                                            </a>
+                                        </h4>
+
+                                    </div>
+                                    <div id="collapseThree" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingThree">
+                                        <div class="panel-body">
+                                            <p>Post Successful OTP verification the Applicant details fetched from UIDAI will be auto populated in the Personal details fields Personal Details, Address Details, Bank Details.</p>
+                                            <p>If there is any change in the details, the applicant should contact UIDAI to update the relevant information.</p>
+                                            <p style="text-align:center"><img src="../Images/help/reg-details.jpg" style="box-shadow: #cecaca 5px 5px 5px;" /></p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="panel panel-default">
+                                    <div class="panel-heading" role="tab" id="headingFour">
+                                        <h4 class="panel-title">
+                                            <a class="collapsed" data-toggle="collapse" data-parent="#accordion" href="#collapseFour" aria-expanded="false" aria-controls="collapseThree">
+                                                Step 4
+                                            </a>
+                                        </h4>
+
+                                    </div>
+                                    <div id="collapseFour" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingFour">
+                                        <div class="panel-body">
+                                            <p>Creation of Applicant’s Username and Password - Applicant will need to create the User Name and Password to access the system in this step.</p>
+                                            <p style="text-align:center"><img src="../Images/help/username.jpg" style="box-shadow: #cecaca 5px 5px 5px;" /></p>
+                                            <p>For Username, suggestion is also provided which are not used in the system as it should be unique. Also Username should contain only alphabets and numbers and Username should be greater than 4 characters and less than 15 characters.</p>
+                                            <p>Password format is also provided in the note section</p>
+                                            <p>Applicant should enter the User Name, Password, Confirm Password</p>
+                                            <p>Applicant should enter a valid Personal mobile number. It is a mandatory step as it will help the system to recognize the applicant. For this, Applicant should enter the mobile number and click on “Get OTP for Mobile Number Verification”. On click, OTP will be received on the entered mobile number. Applicant should enter the OTP in the textbox and then click on “Verify OTP for Mobile number” button. OTP will be verified for 5 minutes</p>
+                                            <p style="text-align:center"><img src="../Images/help/username1.jpg" style="box-shadow: #cecaca 5px 5px 5px;" /></p>
+                                            <p>
+                                                Applicant should enter valid Email – ID and click on “Get OTP for email ID   verification”.
+                                                Note - Email ID verification is not compulsory, but it is recommended to enter email id as it will help the applicant receive time to time updates about the application. For this, Applicant should enter the email ID and click on “Get OTP for Email ID Verification”. On click, OTP will be received on the entered email address. Applicant should enter the OTP in the textbox and then click on “Verify OTP for Email ID” button. OTP will be verified for 5 minutes
+                                            </p>
+                                            <p style="text-align:center"><img src="../Images/help/username2.jpg" style="box-shadow: #cecaca 5px 5px 5px;" /></p>
+                                            <p>After verification, CAPTCHA should be entered  and click on save</p>
+                                            <p>User can use the registered User Name and Password to login into the Aaple Sarkar DBT portal</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+
+
+                    </div>
+                </li>
+                <!--<li>
+                    <span>Registration using Biometric</span>
+                    <div>
+                        <h2>Registration using Biometric</h2>
+                        <p>
+                            If Mobile Number not registered with Aadhaar, the User can select the
+                            authentication type as Biometric
+                        </p>
+                        <p style="text-align:center"><img src="../Images/help/reg-biometric.jpg" style="box-shadow: #cecaca 5px 5px 5px;" /></p>
+                        <p>Make sure that a functional biometric device is attached to the system, which the user using for registration.</p>
+                        <p>Then the user can view the Biometric authentication form - Enter Aadhaar number, User ID, Pass word and confirm password. The User has to put the finger on Biometric device for to get scan and verify.</p>
+                        <p>After successful verification, the User can login with created User ID and Password.</p>
+
+                    </div>
+                </li>-->
+                <li>
+                    <span>Registration using Non Aadhaar</span>
+                    <div>
+                        <h2>Registration using Non Aadhaar</h2>
+                        <div>
+
+                            <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+                                <div class="panel panel-default">
+                                    <div class="panel-heading" role="tab" id="headingFive">
+                                        <h4 class="panel-title">
+                                            <a data-toggle="collapse" data-parent="#accordion" href="#collapseFive" aria-expanded="false" aria-controls="collapseFive">
+                                                Step 1: Click on New Applicant Registration. Applicant can have multiple Scenarios for Registration as below.
+                                            </a>
+                                        </h4>
+
+                                    </div>
+                                    <div id="collapseFive" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingFive">
+                                        <div class="panel-body">
+                                            <p>A) For Question  - Do you have Aadhaar Number? Select No option and continue</p>
+                                            <p style="text-align:center"><img src="../Images/help/reg-non-aadhaar.jpg" width="231" height="135" style="box-shadow: #cecaca 5px 5px 5px;" /></p>
+                                            <p style="text-align:center"><img src="../Images/help/non-aadhaar.jpg" style="box-shadow: #cecaca 5px 5px 5px;" /></p>
+                                            <p>After No is selected  - “Do you have Aadhaar Enrollment ID?” is asked </p>
+                                            <p style="text-align:center"><img src="../Images/help/non-aadhaar2.jpg" style="box-shadow: #cecaca 5px 5px 5px;" /></p>
+                                            <p>If Yes is selected, “Do you want to know the status of Enrollment ID?” is asked and again if Yes is selected. UIDAI page will get opened in new tab and the above screen will get displayed on the Portal.</p>
+                                            <p>If Applicant clicks on “Generated” button then will be proceeded for Registration with Aadhaar number screen</p>
+                                            <p>If Applicant clicks on “Under Process” button then will be proceeded for Registration with Aadhaar number screen.</p>
+                                            <p>If Applicant clicks on “Rejected” button then will be proceeded for New Registration (Non Aadhaar flow)</p>
+                                            <p>B) For Question  - Do you have Aadhaar Number? Select ―No option and continue</p>
+                                            <p style="text-align:center"><img src="../Images/help/reg-non-aadhaar.jpg" style="box-shadow: #cecaca 5px 5px 5px;" /></p>
+                                            <p style="text-align:center"><img src="../Images/help/non-aadhaar.jpg" style="box-shadow: #cecaca 5px 5px 5px;" /></p>
+                                            <p>After No is selected  - “Do you have Aadhaar Enrollment ID?” is asked </p>
+                                            <p style="text-align:center"><img src="../Images/help/non-aadhaar3.jpg" style="box-shadow: #cecaca 5px 5px 5px;" /></p>
+                                            <p>Again question will be asked, “Do you want to know the status of your Enrollment ID? And if No is selected then New Registration (Non Aadhaar flow) screen will be displayed.</p>
+                                            <p>C) For Question  - Do you have Aadhaar Number? Select ―No option and continue</p>
+                                            <p style="text-align:center"><img src="../Images/help/reg-non-aadhaar.jpg" style="box-shadow: #cecaca 5px 5px 5px;" /></p>
+                                            <p style="text-align:center"><img src="../Images/help/non-aadhaar.jpg" style="box-shadow: #cecaca 5px 5px 5px;" /></p>
+                                            <p>After No is selected  - “Do you have Aadhaar Enrollment ID?” is asked  where if user selects No then user is redirected to New Registration (Non – Aadhaar flow)</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="panel panel-default">
+                                    <div class="panel-heading" role="tab" id="headingSix">
+                                        <h4 class="panel-title">
+                                            <a class="collapsed" data-toggle="collapse" data-parent="#accordion" href="#collapseSix" aria-expanded="false" aria-controls="collapseSix">
+                                                Step 2: New Registration (Non Aadhaar) form page will be displayed
+                                            </a>
+                                        </h4>
+
+                                    </div>
+                                    <div id="collapseSix" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingSix">
+                                        <div class="panel-body">
+                                            <p style="text-align:center"><img src="../Images/help/aadhaar-enroll-no.jpg" width="334" height="91" style="box-shadow: #cecaca 5px 5px 5px;" /></p>
+                                            <p>User can also click on “Book Appointment for Aadhaar” to get enrolled in Aadhaar Scheme</p>
+                                            <p>Applicant should enter a valid Personal mobile number. It is a mandatory step as it will help the system to recognize the applicant. For this, Applicant should enter the mobile number and click on “Get OTP for Mobile Number Verification”. On click, OTP will be received on the entered mobile number. Applicant should enter the OTP in the textbox and then click on “Verify OTP for Mobile number” button. OTP will be verified for 5 minutes</p>
+                                            <p>
+                                                Applicant should enter valid Email – ID and click on “Get OTP for email ID   verification”.
+                                                Note - Email ID verification is not compulsory, but it is recommended to enter email id as it will help the applicant receive time to time updates about the application. For this, Applicant should enter the email ID and click on “Get OTP for Email ID Verification”. On click, OTP will be received on the entered email address. Applicant should enter the OTP in the textbox and then click on “Verify OTP for Email ID” button. OTP will be verified for 5 minutes
+                                            </p>
+
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="panel panel-default">
+                                    <div class="panel-heading" role="tab" id="headingSeven">
+                                        <h4 class="panel-title">
+                                            <a class="collapsed" data-toggle="collapse" data-parent="#accordion" href="#collapseSeven" aria-expanded="false" aria-controls="collapseSeven">
+                                                Step 3: Enter Further Form details
+                                            </a>
+                                        </h4>
+
+                                    </div>
+                                    <div id="collapseSeven" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingSeven">
+                                        <div class="panel-body">
+                                            <p style="text-align:center"><img src="../Images/help/basic-details.jpg" style="box-shadow: #cecaca 5px 5px 5px;" /></p>
+                                            <p>User should enter the basic details in the Non-Aadhaar Workflow</p>
+                                            <p>
+                                                Enter Applicant Name<br />
+                                                Select Date of Birth<br />
+                                                Select Gender from the given dropdown options<br />
+                                                Enter Address of the applicant<br />
+                                                Select State from the dropdown options provided<br />
+                                                Select District from the dropdown options. List will be displayed as per the State selected<br />
+                                                Select Taluka from the dropdown options. List will be displayed as per the District selected<br />
+                                                Enter Pincode
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="panel panel-default">
+                                    <div class="panel-heading" role="tab" id="headingEight">
+                                        <h4 class="panel-title">
+                                            <a class="collapsed" data-toggle="collapse" data-parent="#accordion" href="#collapseEight" aria-expanded="false" aria-controls="collapseEight">
+                                                Step 4: Upload Identification Proofs required
+                                            </a>
+                                        </h4>
+
+                                    </div>
+                                    <div id="collapseEight" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingEight">
+                                        <div class="panel-body">
+                                            <p style="text-align:center"><img src="../Images/help/upload-proof.jpg" style="box-shadow: #cecaca 5px 5px 5px;" /></p>
+                                            <p>
+                                                Identity Proof  - Select from the dropdown values and upload file
+                                                PDF file should be less than 500kb and size of jpeg/jpg file should be between 5kb to 500kb<br />
+                                                Address Proof  - Select from the dropdown values and upload file PDF file should be less than 500 and size of jpeg/jpg file should be between 5kb to 500kb<br />
+                                                Birth Proof -  Select from the dropdown values and upload file PDF file should be less than       500 and size of jpeg/jpg file should be between 5kb to 500kb<br />
+                                                Relationship Proof - Select from the dropdown values and upload file PDF file should be less than 500kb and size of jpeg/jpg file should be between 5kb to 500kb
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="panel panel-default">
+                                    <div class="panel-heading" role="tab" id="headingNine">
+                                        <h4 class="panel-title">
+                                            <a class="collapsed" data-toggle="collapse" data-parent="#accordion" href="#collapseNine" aria-expanded="false" aria-controls="collapseNine">
+                                                Step 5
+                                            </a>
+                                        </h4>
+
+                                    </div>
+                                    <div id="collapseNine" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingNine">
+                                        <div class="panel-body">
+                                            <p style="text-align:center"><img src="../Images/help/new-reg-form2.jpg" style="box-shadow: #cecaca 5px 5px 5px;" /></p>
+                                            <p>
+                                                Here user will upload the photo required according to the Portal’s requirement. In case Applicant is not having the image as per requirement, applicant can click on “Click here to Crop Photo” button and on new tab screen will get opened.
+                                                Applicant can edit the signature as well as photo and then upload it to the portal.
+                                            </p>
+                                            <p>After the above steps, User needs to enter the CAPTCHA  and click on save in order to get Registered.</p>
+
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+                <!--<li>
+                    <span>Registration using Non Aadhaar (Enrollment ID flow)</span>
+                    <div>
+                        <h2>Registration using Non Aadhaar (Enrollment ID flow)</h2>
+                        <div>
+
+                            <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+                                <div class="panel panel-default">
+                                    <div class="panel-heading" role="tab" id="headingTen">
+                                        <h4 class="panel-title">
+                                            <a data-toggle="collapse" data-parent="#accordion" href="#collapseTen" aria-expanded="false" aria-controls="collapseTen">
+                                                Step 1 - Click on New Applicant Registration
+                                            </a>
+                                        </h4>
+
+                                    </div>
+                                    <div id="collapseTen" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingTen">
+                                        <div class="panel-body">
+                                            <p>For Question  - Do you have Aadhaar Number? Select ―Yes option and continue</p>
+                                            <p style="text-align:center"><img src="../Images/help/enroll-id.jpg" style="box-shadow: #cecaca 5px 5px 5px;" /></p>
+                                            <p><strong>Enrollment ID Check –</strong> The system will ask, ―Do you have an Enrolment ID?  Click on ―Yes Button</p>
+
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="panel panel-default">
+                                    <div class="panel-heading" role="tab" id="headingEleven">
+                                        <h4 class="panel-title">
+                                            <a class="collapsed" data-toggle="collapse" data-parent="#accordion" href="#collapseEleven" aria-expanded="false" aria-controls="collapseEleven">
+                                                Step 2
+                                            </a>
+                                        </h4>
+
+                                    </div>
+                                    <div id="collapseEleven" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingEleven">
+                                        <div class="panel-body">
+                                            <p style="text-align:center"><img src="../Images/help/aadhaar-status.jpg" style="box-shadow: #cecaca 5px 5px 5px;" /></p>
+                                            <p>Enter Enrollment ID and click on “ Check your Aadhaar Status”. New tab will get opened and in the tab URL –<a href="https://resident.uidai.gov.in/check-aadhaar-status" target="_blank"> https://resident.uidai.gov.in/check-aadhaar-status </a></p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="panel panel-default">
+                                    <div class="panel-heading" role="tab" id="headingTwelve">
+                                        <h4 class="panel-title">
+                                            <a class="collapsed" data-toggle="collapse" data-parent="#accordion" href="#collapseTwelve" aria-expanded="false" aria-controls="collapseTwelve">
+                                                Step 3
+                                            </a>
+                                        </h4>
+
+                                    </div>
+                                    <div id="collapseTwelve" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingTwelve">
+                                        <div class="panel-body">
+                                            <p style="text-align:center"><img src="../Images/help/eid-generated.jpg" style="box-shadow: #cecaca 5px 5px 5px;" /></p>
+                                            <p>If the Enrollment ID (EID) is Generated, then the user will be redirected to step 2 of Aadhaar registration flow</p>
+                                            <p>If the Enrollment ID (EID) is Rejected, the user should start registering on DBT Portal without Aadhaar.</p>
+                                            <p>User should know the reason of rejection of the Enrolment ID and should search for Aadhaar Permanent Enrolment Center (PEC) and re-enroll for getting the Aadhaar.</p>
+                                            <p>If the Enrollment Id (EID) is Under process, the user has to Enter the enrolment number (Enrolment Id +Date Timestamp) and click on ―Continue‖ button to proceed with Registration process on DBT Portal.</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+
+                            </div>
+
+                        </div>
+
+
+                    </div>
+                </li>-->
+                <li>
+                    <span>User Login</span>
+                    <div>
+                        <h2>User Login</h2>
+                        <div>
+
+                            <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+                                <div class="panel panel-default">
+                                    <div class="panel-heading" role="tab" id="heading13">
+                                        <h4 class="panel-title">
+                                            <a data-toggle="collapse" data-parent="#accordion" href="#collapse13" aria-expanded="false" aria-controls="collapse13">
+                                                To login into Aaple Sarkar DBT portal, Applicant has to perform following steps.
+                                            </a>
+                                        </h4>
+
+                                    </div>
+                                    <div id="collapse13" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="heading13">
+                                        <div class="panel-body">
+                                            <p>a) Click on “Applicant Login” button -</p>
+                                            <p style="text-align:center"><img src="../Images/help/login.jpg" width="329" height="110" style="box-shadow: #cecaca 5px 5px 5px;" /></p>
+                                            <p>
+                                                b) Username & Password – Enter the Username and Password as entered during registration.<br />
+                                                c) Captcha - Enter the valid Captcha and Click on Login
+                                            </p>
+
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="panel panel-default">
+                                    <div class="panel-heading" role="tab" id="heading14">
+                                        <h4 class="panel-title">
+                                            <a class="collapsed" data-toggle="collapse" data-parent="#accordion" href="#collapse14" aria-expanded="false" aria-controls="collapse14">
+                                                Forgot User Name :
+                                            </a>
+                                        </h4>
+
+                                    </div>
+                                    <div id="collapse14" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading14">
+                                        <div class="panel-body">
+                                            <p>If  Applicant Forgets User Name then Click on Forgot User Name button on the Home DBT page.</p>
+                                            <p style="text-align:center"><img src="../Images/help/login-section.jpg" width="285" height="245" style="box-shadow: #cecaca 5px 5px 5px;" /></p>
+                                            <p style="text-align:center"><img src="../Images/help/forgot-username.jpg" style="box-shadow: #cecaca 5px 5px 5px;" /></p>
+                                            <p>Applicant will have to enter Full Name, Mobile number which is registered on the portal and Date of birth</p>
+                                            <p>After entering the details, Click on Get User Name button. Applicant will receive SMS on the Mobile number which was used while registration into the Portal.</p>
+
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="panel panel-default">
+                                    <div class="panel-heading" role="tab" id="heading15">
+                                        <h4 class="panel-title">
+                                            <a class="collapsed" data-toggle="collapse" data-parent="#accordion" href="#collapse15" aria-expanded="false" aria-controls="collapse15">
+                                                Forgot Password :
+                                            </a>
+                                        </h4>
+
+                                    </div>
+                                    <div id="collapse15" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading15">
+                                        <div class="panel-body">
+                                            <p>If  Applicant Forgets Password then Click on Forgot Password button on the Home DBT page.</p>
+                                            <p style="text-align:center"><img src="../Images/help/login-section.jpg" style="box-shadow: #cecaca 5px 5px 5px;" /></p>
+                                            <p style="text-align:center"><img src="../Images/help/forgot-password.jpg" style="box-shadow: #cecaca 5px 5px 5px;" /><br />Applicant will have to enter Username as Registered on the Portal</p>
+                                            <p>After the above step user will have to click on “Get OTP” button. SMS will be received on Registered mobile number.</p>
+                                            <p>User will have to enter OTP. Enter New Password ,Confirm Password and click on Set Password button.</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+
+                            </div>
+
+                        </div>
+
+
+                    </div>
+                </li>
+                <li>
+                    <span>User Dashboard</span>
+                    <div>
+                        <h2>User Dashboard</h2>
+                        <div>
+
+                            <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+                                <div class="panel panel-default">
+                                    <div class="panel-heading" role="tab" id="heading16">
+                                        <h4 class="panel-title">
+                                            <a data-toggle="collapse" data-parent="#accordion" href="#collapse16" aria-expanded="false" aria-controls="collapse16">
+                                                Welcome Page
+                                            </a>
+                                        </h4>
+
+                                    </div>
+                                    <div id="collapse16" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="heading16">
+                                        <div class="panel-body">
+                                            <p>After Successful Login to the Portal, the user will see Welcome page by default.</p>
+                                            <p style="text-align:center"><img src="../Images/help/user-dashboard.jpg" width="326" height="146" style="box-shadow: #cecaca 5px 5px 5px;" /></p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="panel panel-default">
+                                    <div class="panel-heading" role="tab" id="heading17">
+                                        <h4 class="panel-title">
+                                            <a class="collapsed" data-toggle="collapse" data-parent="#accordion" href="#collapse17" aria-expanded="false" aria-controls="collapse17">
+                                                Left panel – Menu: 1.	Home
+                                            </a>
+                                        </h4>
+
+                                    </div>
+                                    <div id="collapse17" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading17">
+                                        <div class="panel-body">
+                                            <p>The following items shown on the Left panel of the Applicant dashboard after login</p>
+                                            <p>The applicant will land on Home page after login</p>
+                                            <p>1 Home Page Information: The applicant can view profile completeness status and add or update accordingly.</p>
+                                            <p>User can also view the “Suggested Eligible Schemes” according to the profile as filled up</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="panel panel-default">
+                                    <div class="panel-heading" role="tab" id="heading18">
+                                        <h4 class="panel-title">
+                                            <a class="collapsed" data-toggle="collapse" data-parent="#accordion" href="#collapse18" aria-expanded="false" aria-controls="collapse18">
+                                                Left panel – Menu: 2. Profile
+                                            </a>
+                                        </h4>
+
+                                    </div>
+                                    <div id="collapse18" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading18">
+                                        <div class="panel-body">
+                                            <p>User will click on profile button in order to fill in details of profile. Profile is divided into the following categories</p>
+                                            <p><strong>1. Personal Information –</strong> User will fill in Personal Information details relating to -  Personal Details, Domicile Details, Income Details, Personal Eligibility Details, Caste Details -</p>
+                                            <p style="text-align:center"><img src="../Images/help/personal-details.jpg" width="331" height="321" style="box-shadow: #cecaca 5px 5px 5px;" /><br />Personal details</p>
+                                            <p>
+                                                <strong>Personal Details :</strong><br />
+                                                Applicants have to fill all mandatory fields in the form<br />
+                                                Aadhaar Number<br />
+                                                Name<br />
+                                                Mobile number<br />
+                                                Email ID<br />
+                                                Date of Birth<br />
+                                                Age<br />
+                                                Gender<br />
+                                                Religion (Dropdown)<br />
+                                                Marital Status (Married/Unmarried)
+                                            </p>
+
+                                            <p style="text-align:center">Caste Details<br /><img src="../Images/help/caste-details.jpg" width="332" height="264" style="box-shadow: #cecaca 5px 5px 5px;" /></p>
+                                            <p>
+                                                <strong>Caste Details :</strong><br />
+                                                Applicants have to fill all mandatory fields in the form<br />
+                                                Caste Category<br />
+                                                Caste<br />
+                                                Sub Caste<br />
+                                                Do you have Caste Certificate?<br />
+                                                Did you receive the certificate from Aaple Sarkar Seva Kendra or Aaple Sarkar Portal and have a barcode on it?<br />
+                                                Caste Certificate Number
+                                            </p>
+                                            <p style="text-align:center">Income Details<br /><img src="../Images/help/income-details.jpg" width="332" height="334" style="box-shadow: #cecaca 5px 5px 5px;" /></p>
+                                            <p>
+                                                <strong>Income Details :</strong><br />
+                                                Applicants have to fill all mandatory fields in the form<br />
+                                                Family Income<br />
+                                                Do you have Income Certificate?<br />
+                                                Did you receive the certificate from Aaple Sarkar Seva Kendra or Aaple Sarkar Portal and have a barcode on it?<br />
+                                                Enter Barcode Here
+                                            </p>
+                                            <p style="text-align:center">Domicile Details<br /><img src="../Images/help/Domicile-details.jpg" style="box-shadow: #cecaca 5px 5px 5px;" /></p>
+                                            <p>
+                                                <strong>Domicile Details :</strong><br />
+                                                Applicants have to fill all mandatory fields in the form<br />
+                                                Are you Domicile of Maharashtra?<br />
+                                                Do you have Domicile Certificate (Self/Parents)?<br />
+                                                Did you receive the certificate from Aaple Sarkar Seva Kendra or Aaple Sarkar Portal and have a barcode on it?<br />
+                                                Enter Barcode Details
+                                            </p>
+                                            <p style="text-align:center">Personal Eligibility Details<br /><img src="../Images/help/personal-eligibility.jpg" style="box-shadow: #cecaca 5px 5px 5px;" /></p>
+                                            <p>
+                                                <strong>Personal Eligibility Details:</strong><br />
+                                                Applicants have to fill all mandatory fields in the form<br />
+                                                Are you Salaried?<br />
+                                                Job type<br />
+                                                Disability Type<br />
+                                                Person with Disability?<br />
+                                                Do you have Disability Certificate (Yes/No)<br />
+                                                Sibling Number
+                                            </p>
+                                            <p style="text-align:center">Bank Details<br /><img src="../Images/help/bank-details.jpg" style="box-shadow: #cecaca 5px 5px 5px;" /></p>
+                                            <p>
+                                                <strong>Bank Details:</strong><br />
+                                                Is your Jandhan Account linked with your Aadhaar?
+                                            </p>
+                                            <p><strong>2. Address Information -</strong> User will fill in Address Information details relating to –</p>
+                                            <p style="text-align:center"><img src="../Images/help/address-details.jpg" width="331" height="250" style="box-shadow: #cecaca 5px 5px 5px;" /><br />Permanent and Correspondence Address Details</p>
+                                            <p>
+                                                <strong>Permanent  Address Details</strong><br />
+                                                Applicants have to fill all mandatory fields in the form<br />
+                                                Address<br />
+                                                State<br />
+                                                District<br />
+                                                Taluka<br />
+                                                Village<br />
+                                                Pincode<br />
+                                            <p>If “is Correspondence Address as same as Permanent?” if Yes is selected then Permanent address content details will get copied in Correspondence address. If no is selected, then Applicant will have to manually enter Correspondence Address Details</p>
+                                            Correspondence  Address Details<br />
+                                            Applicants have to fill all mandatory fields in the form<br />
+                                            Address<br />
+                                            State<br />
+                                            District<br />
+                                            Taluka<br />
+                                            Village<br />
+                                            Pincode
+                                            </p>
+                                            <p><strong>3. Other Information –</strong>  User will fill in Address Information details relating to –</p>
+                                            <p style="text-align:center"><img src="../Images/help/other-info.jpg" width="332" height="277" style="box-shadow: #cecaca 5px 5px 5px;" /><br />Parent’s/Guardian’s Details</p>
+                                            <p>
+                                                <strong>Parent’s/Guardian’s Details:</strong><br />
+                                                Applicants have to fill all mandatory fields in the form<br />
+                                                Is Father alive?  ( Yes/No)<br />
+                                                Father Name<br />
+                                                Is Salaried?<br />
+                                                Occupation<br />
+                                            </p>
+                                            <p>
+                                                <strong>Applicants have to fill all mandatory fields in the form</strong>
+                                                Is Mother alive? (Yes/No)<br />
+                                                Mother Name<br />
+                                                Is Salaried?<br />
+                                                Occupation<br />
+                                            </p>
+                                            <p><strong>4. Course Applied –</strong> User will fill in Current Course details information</p>
+                                            <p style="text-align:center"><img src="../Images/help/course-details.jpg" width="331" height="347" style="box-shadow: #cecaca 5px 5px 5px;" /></p>
+                                            <p>
+                                                <strong>5. Past Qualification Information –</strong> User will fill in Details relating to Past Qualification
+                                                Information
+                                            </p>
+                                            <p style="text-align:center"><img src="../Images/help/qualification.jpg" width="324" height="305" style="box-shadow: #cecaca 5px 5px 5px;" /><br />Past Qualification Information</p>
+                                            <p>
+                                                <strong>Past Qualification Information</strong>
+                                                Applicants have to fill all mandatory fields in the form<br />
+                                                Qualification type<br />
+                                                Degree<br />
+                                                Subject<br />
+                                                Completed or Pursuing<br />
+                                                State<br />
+                                                Board/University<br />
+                                                Admission Date<br />
+                                                Result<br />
+                                                Passing Year<br />
+                                                Attempts<br />
+                                                Percentage<br />
+                                                Course Duration (in months)<br />
+                                                Class/Grade<br />
+                                                Mode<br />
+                                                Upload Marksheet<br />
+                                                Was any GAP in this Qualification/Course? (Yes/No)
+                                            </p>
+                                            <p style="text-align:center"><img src="../Images/help/qualification-details.jpg" width="325" height="92" style="box-shadow: #cecaca 5px 5px 5px;" /><br />After saving qualification details, grid view will be displayed above</p>
+                                            <p><strong>6. Hostel Details –</strong> User will fill in Hostel / Day Scholar information</p>
+                                            <p style="text-align:center"><img src="../Images/help/hostel-details.jpg" width="332" height="305" style="box-shadow: #cecaca 5px 5px 5px;" /><br />In hostel information, if day scholar is selected then no form will be displayed. Applicant will click on save button</p>
+
+                                            <p>
+                                                <strong>Hostel Details</strong><br />
+                                                Applicants have to fill all mandatory fields in the form<br />
+                                                Beneficiary Category (Hosteller/Day Scholar)<br />
+                                                State<br />
+                                                District<br />
+                                                Taluka<br />
+                                                Hostel Type<br />
+                                                Hostel Name<br />
+                                                Is Hostel Aided?<br />
+                                                Hostel Address<br />
+                                                Date of Admission<br />
+                                                Is mess available?<br />
+                                                Rent per Month<br />
+                                                Hosteller Certificate
+                                            </p>
+
+                                            <p>After saving the profile,  User can either click on All schemes button or Home button</p>
+                                            <p>Home button will display the landing page of the Portal where “Suggested eligible Schemes” according to the Profile will be displayed.</p>
+                                            <p>System will suggest schemes to applicant only after filling up the profile to 100 % completeness and on the basis of Caste, Religion & Income.</p>
+                                            <p>If clicked on All schemes, System will display all the schemes on the Portal.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="panel panel-default">
+                                    <div class="panel-heading" role="tab" id="heading19">
+                                        <h4 class="panel-title">
+                                            <a class="collapsed" data-toggle="collapse" data-parent="#accordion" href="#collapse19" aria-expanded="false" aria-controls="collapse19">
+                                                Left panel – Menu: 3.	All Schemes
+                                            </a>
+                                        </h4>
+                                    </div>
+                                    <div id="collapse19" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading19">
+                                        <div class="panel-body">
+                                            <p>This screen will display all the Post Metric schemes  after clicked on All Schemes</p>
+                                            <p style="text-align:center"><img src="../Images/help/post-matric-schemes.jpg" width="333" height="82" style="box-shadow: #cecaca 5px 5px 5px;" /></p>
+                                            <p>User can either apply for schemes  or Click on PDF to view the GR of the schemes</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="panel panel-default">
+                                    <div class="panel-heading" role="tab" id="heading20">
+                                        <h4 class="panel-title">
+                                            <a class="collapsed" data-toggle="collapse" data-parent="#accordion" href="#collapse20" aria-expanded="false" aria-controls="collapse20">
+                                                Left panel – Menu: 4.	My Applied Scheme
+                                            </a>
+                                        </h4>
+                                    </div>
+                                    <div id="collapse20" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading20">
+                                        <div class="panel-body">
+                                            <p>In order to check for the total number of schemes applied, applicant should click on applied schemes button.</p>
+                                            <p style="text-align:center"><img src="../Images/help/applied-schemes.jpg" width="332" height="136" style="box-shadow: #cecaca 5px 5px 5px;" /></p>
+                                            <p>Under Scrutiny Applications</p>
+                                            <p>
+                                                <strong>Under Applied Schemes option, user can view –</strong><br />
+                                                Application ID<br />
+                                                Department Name<br />
+                                                Scheme Name<br />
+                                                Status<br />
+                                                Action<br />
+                                                View Form<br />
+                                                Tentative Benefits
+                                            </p>
+                                            <p>After Application is submitted successfully by applicant, it will be displayed in under Scrutiny Applications section.</p>
+                                            <p>Applicant can click on Cancel button if want to take back application form.</p>
+                                            <p>Applicant can click on view button if want to view Applicant Details section.</p>
+                                            <p>For example - After application is submitted and applicant wants to view the details filled in, it is possible on click on view button under view form and also can take the print out of the form after click of Print button which is present to the bottom of the page</p>
+                                            <p>It is also possible, Application is sent successfully but during scrutiny major/minor issue is found. At such stage, Desk officers can send the application back and Applicant can view the application again after login.</p>
+                                            <p>Reason for sent back will also be provided by respective officer which will be displayed to the Applicant.</p>
+                                            <p style="text-align:center"><img src="../Images/help/scrutiny.jpg" style="box-shadow: #cecaca 5px 5px 5px;" /></p>
+                                            <p>Here Applicant should make the necessary changes in the Profile as per the given reason for sent back and click on the Re – apply button under My Applied Scheme option</p>
+
+                                            <p><strong>Tentative benefits -</strong></p>
+                                            <p style="text-align:center"><img src="../Images/help/tentative-benefits.jpg" width="334" height="74" style="box-shadow: #cecaca 5px 5px 5px;" /></p>
+                                            <p>Applicant can also view the Tentative benefits by clicking on Tentative benefits button.</p>
+                                            <p>These are the Tentative Benefit calculation which are displayed by System as per the Profile filled by the Applicant and as per the scheme applied by applicant.</p>
+
+                                            <p><strong>Approved Applications –</strong></p>
+                                            <p>After the successful submission of application from applicant’s login. Application will be checked by respective Institute and Department.</p>
+                                            <p>After the Application is approved by Desk 2 officer of Department, Status of the Application will change to Approved and will be displayed under Approved Applications tab from Under Scrutiny.</p>
+                                            <p style="text-align:center"><img src="../Images/help/approved-applications.jpg" style="box-shadow: #cecaca 5px 5px 5px;" /></p>
+
+                                            <p><strong>Rejected Applications – </strong></p>
+                                            <p>After the successful submission of application from applicant’s login. Application will be checked by respective Institute and Department.</p>
+                                            <p>If under any of the Desk officer Application is rejected, then the application will be displayed under Rejected Applications tab. Rejection can be totally invalid Application or maybe also Fraud applications.</p>
+                                            <p>In My Applied Scheme, User can Set Schemes Preferences- Applicant can be eligible for more than one scheme in the Portal. At such situations, User can apply for more than one scheme but Scholarship/Freeship amount will be disbursed into bank account only for one scheme, according to the Preference set by the Applicant.</p>
+
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="panel panel-default">
+                                    <div class="panel-heading" role="tab" id="heading21">
+                                        <h4 class="panel-title">
+                                            <a class="collapsed" data-toggle="collapse" data-parent="#accordion" href="#collapse21" aria-expanded="false" aria-controls="collapse21">
+                                                Left panel – Menu: 5.	My Canceled Scheme
+                                            </a>
+                                        </h4>
+                                    </div>
+                                    <div id="collapse21" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading21">
+                                        <div class="panel-body">
+                                            <p>Applicant can Cancel the scheme after successful submission to the respective Institute/School by clicking on Cancel button under Action column in My Applied Scheme option.</p>
+                                            <p style="text-align:center"><img src="../Images/help/cancel-application.jpg" width="334" height="73" style="box-shadow: #cecaca 5px 5px 5px;" /><br />Transaction history will be maintained for the Canceled scheme</p>
+
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="panel panel-default">
+                                    <div class="panel-heading" role="tab" id="heading22">
+                                        <h4 class="panel-title">
+                                            <a class="collapsed" data-toggle="collapse" data-parent="#accordion" href="#collapse22" aria-expanded="false" aria-controls="collapse22">
+                                                Left panel – Menu: 6.	Grievance/Suggestions
+                                            </a>
+                                        </h4>
+                                    </div>
+                                    <div id="collapse22" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading22">
+                                        <div class="panel-body">
+                                            <p>Applicant May have Grievance (Complaint) / Suggestions for Aaple Sarkar DBT Portal.</p>
+                                            <p>In Such scenarios, Applicant should click on Grievance/Suggestions which is displayed after login under left hand side panel of the page.</p>
+                                            <p style="text-align:center"><img src="../Images/help/grievance.jpg" style="box-shadow: #cecaca 5px 5px 5px;" /></p>
+                                            <p style="text-align:center"><img src="../Images/help/grievance-form.jpg" style="box-shadow: #cecaca 5px 5px 5px;" /></p>
+                                            <p>
+                                                Here Applicant will have to fill up all the Mandatory fields –<br />
+                                                Name<br />
+                                                Mobile Number<br />
+                                                Email ID<br />
+                                                Department<br />
+                                                Scheme Name<br />
+                                                Category<br />
+                                                Grievance/ Suggestions type<br />
+                                                Comments<br />
+                                                Also it is necessary to enter the CAPTCHA, only then Submit button will be enabled.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+
+
+                    </div>
+                </li>
+            </ul>
+        </div>
+
+        <!--<div id="panel-account">
+            <ul>
+                <li><a href="#/">My profile</a></li>
+                <li><a href="#/">Privacy settings</a></li>
+                <li><a href="#/">Activity</a></li>
+                <li><a href="#/">Sign out</a></li>
+            </ul>
+        </div>
+
+        <div id="panel-cart">
+            <p style="text-align: center; padding-top: 30px;">
+                Your shoppingcart is empty.<br />
+                <a href="#/">Continue shopping.</a>
+            </p>
+        </div>-->
+    </nav>
+</div>
+
+
+        </div>
+        <div id="wait" class="showbox" style="display:none">
+            <div class="loader text-center">
+                <img src="/Farmer/Images/loader.gif" alt="Loading" />
+                <br />
+                <span style="font-size:large; margin-left: 0px">Processing...</span>
+            </div>
+        </div>
+    </div>
+<script type="text/javascript" src="/Farmer/Scripts/jquery.unobtrusive-ajax.js"></script>
+<script type="text/javascript" src="/Farmer/Scripts/jquery.validate.js"></script>
+<script type="text/javascript" src="/Farmer/Scripts/jquery.validate.unobtrusive.js"></script>
+<script type="text/javascript" src="/Farmer/Scripts/ValidationScripts.js"></script>
+
+<script type="text/javascript" src="/Farmer/Scripts/jquery-3.6.0.min.js"></script>
+<script type="text/javascript" src="/Farmer/Scripts/jquery-ui.min.js"></script>
+<script type="text/javascript" src="/Farmer/Scripts/md5.js"></script>
+<script src="/Farmer/Scripts/bootstrap.min.js" type="text/javascript"></script>
+<script src="/Farmer/Scripts/easyResponsiveTabs.js" type="text/javascript"></script>
+<script src="/Farmer/Scripts/jquery-ui.js" type="text/javascript"></script>
+<script src="/Farmer/Scripts/jquery.placeholder.js" type="text/javascript"></script>
+<script src="/Farmer/Scripts/jquery.msgBox.js" type="text/javascript"></script>
+<script src="/Farmer/Scripts/jquery.bootstrap.newsbox.min.js" type="text/javascript"></script>
+
+<script src="/Farmer/Scripts/bootstrap-datepicker.min.js" type="text/javascript"></script>
+<script src="/Farmer/Scripts/jquery.mmenu.min.all.js" type="text/javascript"></script>
+<script>
+    $(function () {
+        $('nav#menu').mmenu({
+            extensions: ['theme-dark'],
+            setSelected: true,
+            counters: true,
+            searchfield: {
+                placeholder: 'Search menu items'
+            },
+            iconbar: {
+                add: true,
+                size: 40,
+                top: [
+                    '<a href="#/"><span class="fa fa-home"></span></a>'
+                ],
+                bottom: [
+                    '<a href="#/"><span class="fa fa-twitter"></span></a>',
+                    '<a href="#/"><span class="fa fa-facebook"></span></a>',
+                    '<a href="#/"><span class="fa fa-youtube"></span></a>'
+                ]
+            },
+            sidebar: {
+                collapsed: {
+                    use: '(min-width: 450px)',
+                    size: 40,
+                    hideNavbar: false
+                },
+                expanded: {
+                    use: '(min-width: 992px)',
+                    size: 35
+                }
+            },
+            navbars: [
+                {
+                    content: ['searchfield']
+                },
+                    //{
+                //    type: 'tabs',
+                //    content: [
+                //		'<a href="#panel-menu"><i class="fa fa-bars"></i> <span>Menu</span></a>',
+                //		'<a href="#panel-account"><i class="fa fa-user"></i> <span>Account</span></a>',
+                //		'<a href="#panel-cart"><i class="fa fa-shopping-cart"></i> <span>Cart</span></a>'
+                //    ]
+                //},
+                {
+                    content: ['prev', 'breadcrumbs', 'close']
+                }, {
+                    position: 'bottom',
+                    content: ['<a href="../PDF/AS-DBT-Help.pdf" target="_blank"><span class="btn btn-danger btn-md"><i class="fa fa-download" aria-hidden="true"></i> Download User Manual</span></a>']
+                }
+            ]
+        }, {
+            searchfield: {
+                clear: true
+            },
+            navbars: {
+                breadcrumbs: {
+                    removeFirst: true
+                }
+            }
+        });
+
+        $('a[href^="#/"]').click(function () {
+            alert('Thank you for clicking, but that\'s a demo link');
+            return false;
+        })
+    });
+</script>
+<script type="text/javascript">
+    $(function () {
+        var items = $('#navMenu-items').width();
+        var itemSelected = document.getElementsByClassName('navMenu-item');
+        navPointerScroll($(itemSelected));
+        $("#navMenu-items").scrollLeft(200).delay(200).animate({
+            scrollLeft: "-=200"
+        }, 2000, "easeOutQuad");
+        $('.navMenu-paddle-right').click(function () {
+            $("#navMenu-items").animate({
+                scrollLeft: '+=' + items
+            });
+        });
+        $('.navMenu-paddle-left').click(function () {
+            $("#navMenu-items").animate({
+                scrollLeft: "-=" + items
+            });
+        });
+        if (!/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+            var scrolling = false;
+            $(".navMenu-paddle-right").bind("mouseover", function (event) {
+                scrolling = true;
+                scrollContent("right");
+            }).bind("mouseout", function (event) {
+                scrolling = false;
+            });
+            $(".navMenu-paddle-left").bind("mouseover", function (event) {
+                scrolling = true;
+                scrollContent("left");
+            }).bind("mouseout", function (event) {
+                scrolling = false;
+            });
+            function scrollContent(direction) {
+                var amount = (direction === "left" ? "-=3px" : "+=3px");
+                $("#navMenu-items").animate({
+                    scrollLeft: amount
+                }, 1, function () {
+                    if (scrolling) {
+                        scrollContent(direction);
+                    }
+                });
+            }
+        }
+        $('.navMenu-item').click(function () {
+            $('#navMenu').find('.active').removeClass('active');
+            $(this).addClass("active");
+            navPointerScroll($(this));
+        });
+    });
+    function navPointerScroll(ele) {
+        var parentScroll = $("#navMenu-items").scrollLeft();
+        var offset = ($(ele).offset().left - $('#navMenu-items').offset().left);
+        var totalelement = offset + $(ele).outerWidth() / 2;
+        var rt = (($(ele).offset().left) - ($('#navMenu-wrapper').offset().left) + ($(ele).outerWidth()) / 2);
+        $('#menuSelector').animate({
+            left: totalelement + parentScroll
+        })
+    }
+</script>
+<script type="text/javascript">
+    $(function () {
+        window.prettyPrint && prettyPrint()
+        $(document).on('click', '.yamm .dropdown-menu', function (e) {
+            e.stopPropagation()
+        })
+    })
+</script>
+<script type="text/javascript">
+    $(document).ready(function () {
+        $(".normal-size").click(function () {
+            $("*[style]").removeAttr("style");
+        });
+        $(".normal-size").hover(function () {
+            $(".incrs-font").animate({ left: '-2px' }, 200)
+            $(".decrs-font").animate({ left: '59px' }, 200)
+        });
+
+        $('.count').each(function () {
+
+            $(this).prop('Counter', 0).animate({
+                Counter: $(this).text()
+            }, {
+                duration: 1000,
+                easing: 'swing',
+                step: function (now) {
+                    $(this).text(Math.ceil(now));
+                }
+            });
+        });
+    });
+
+</script>
+<script type="text/javascript">
+    $(window).scroll(startCounter);
+    function startCounter() {
+        if ($(window).scrollTop() > 200) {
+            $(window).off("scroll", startCounter);
+            $('.count').each(function () {
+                var $this = $(this);
+                jQuery({ Counter: 0 }).animate({ Counter: $this.text() }, {
+                    duration: 1000,
+                    easing: 'swing',
+                    step: function () {
+                        $this.text(Math.ceil(this.Counter));
+                    }
+                });
+            });
+        }
+    }
+
+</script>
+<script type="text/javascript">
+    $(function () {
+        $(".demo05").bootstrapNews({
+            newsPerPage: 6,
+            autoplay: false,
+            pauseOnHover: true,
+            direction: 'up',
+            newsTickerInterval: 4000,
+            onToDo: function () {
+                //console.log(this);
+            }
+        });
+    });
+</script>
+<script type="text/javascript">
+    $(document).ready(function () {
+        //Vertical Tab
+        $('.parentVerticalTab').easyResponsiveTabs({
+            type: 'vertical',
+            width: 'auto',
+            fit: true,
+            closed: 'accordion',
+            tabidentify: 'hor_1',
+            activate: function (event) {
+                var $tab = $(this);
+                var $info = $('#nested-tabInfo2');
+                var $name = $('span', $info);
+                $name.text($tab.text());
+                $info.show();
+            }
+        });
+
+
+        $(".resp-tab-active").trigger("click");
+    });
+</script>
+<script>
+    $(document).ready(function () {
+
+        var bodyEl = $('body'),
+          accordionDT = $('.accordion').find('dt'),
+          accordionDD = accordionDT.next('dd'),
+          parentHeight = accordionDD.height(),
+          childHeight = accordionDD.children('.content').outerHeight(true),
+          newHeight = parentHeight > 0 ? 0 : childHeight,
+          accordionPanel = $('.accordion-panel'),
+          buttonsWrapper = accordionPanel.find('.buttons-wrapper'),
+          openBtn = accordionPanel.find('.open-btn'),
+          closeBtn = accordionPanel.find('.close-btn');
+
+        bodyEl.on('click', function (argument) {
+            var totalItems = $('.accordion').children('dt').length;
+            var totalItemsOpen = $('.accordion').children('dt.is-open').length;
+
+            if (totalItems == totalItemsOpen) {
+                openBtn.addClass('hidden');
+                closeBtn.removeClass('hidden');
+                buttonsWrapper.addClass('is-open');
+            } else {
+                openBtn.removeClass('hidden');
+                closeBtn.addClass('hidden');
+                buttonsWrapper.removeClass('is-open');
+            }
+        });
+
+        function openAll() {
+
+            openBtn.on('click', function (argument) {
+
+                accordionDD.each(function (argument) {
+                    var eachNewHeight = $(this).children('.content').outerHeight(true);
+                    $(this).css({
+                        height: eachNewHeight
+                    });
+                });
+                accordionDT.addClass('is-open');
+            });
+        }
+
+        function closeAll() {
+
+            closeBtn.on('click', function (argument) {
+                accordionDD.css({
+                    height: 0
+                });
+                accordionDT.removeClass('is-open');
+            });
+        }
+
+        function openCloseItem() {
+            accordionDT.on('click', function () {
+
+                var el = $(this),
+                  target = el.next('dd'),
+                  parentHeight = target.height(),
+                  childHeight = target.children('.content').outerHeight(true),
+                  newHeight = parentHeight > 0 ? 0 : childHeight;
+
+                // animate to new height
+                target.css({
+                    height: newHeight
+                });
+
+                // remove existing classes & add class to clicked target
+                if (!el.hasClass('is-open')) {
+                    el.addClass('is-open');
+                }
+
+                    // if we are on clicked target then remove the class
+                else {
+                    el.removeClass('is-open');
+                }
+            });
+        }
+
+        openAll();
+        closeAll();
+        openCloseItem();
+    });
+    //# sourceURL=pen.js
+</script>
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('#sidebarCollapse2').on('click', function (e) {
+            //$('#mm-blocker').toggleClass('active');
+            if ($(this).hasClass('active')) {
+                $(this).removeClass('active');
+                //$('.mm-current').removeClass('mm-opened').removeClass('mm-current');
+                //$('.mm-subopened').removeClass('mm-subopened').addClass('mm-current');
+            }
+            else {
+                $(this).addClass('active');
+            }
+        });
+
+        $('#mm-blocker').on('click', function (e) {
+            //$('#mm-blocker').toggleClass('active');
+            $('#sidebarCollapse2').removeClass('active');
+            //$('.mm-current').removeClass('mm-opened').removeClass('mm-current');
+            //$('.mm-subopened').removeClass('mm-subopened').addClass('mm-current');
+        });
+
+        $('.mm-close').on('click', function (e) {
+            //$('#mm-blocker').toggleClass('active');
+            $('#sidebarCollapse2').removeClass('active');
+            $('.mm-current').removeClass('mm-opened').removeClass('mm-current');
+            $('.mm-subopened').removeClass('mm-subopened').addClass('mm-current');
+            //$("#panel-menu").trigger("click");
+        });
+    });
+</script>
+
+
+</body>
+</html>
+
+
+<script>
+        $(document).ready(function () {
+            var $affectedElements = $("#global-wrapper"); // Can be extended, ex. $("div, p, span.someClass")
+
+            // Storing the original size in a data attribute so size can be reset
+            $affectedElements.each(function () {
+                var $this = $(this);
+                $this.data("orig-size", $this.css("font-size"));
+            });
+
+            $("#btn-increase").click(function () {
+                changeFontSize(1);
+            })
+
+            $("#btn-decrease").click(function () {
+                changeFontSize(-1);
+            })
+
+            $("#btn-orig").click(function () {
+                $affectedElements.each(function () {
+                    var $this = $(this);
+                    $this.css("font-size", $this.data("orig-size"));
+                });
+            })
+
+            function changeFontSize(direction) {
+                $affectedElements.each(function () {
+                    var $this = $(this);
+                    $this.css("font-size", parseInt($this.css("font-size")) + direction);
+                });
+            }
+
+        });
+</script>
+
