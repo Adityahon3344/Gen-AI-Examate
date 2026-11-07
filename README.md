@@ -133,4 +133,61 @@ source .venv/bin/activate
 ```bash
 pip install -r requirements.txt
 ```
+## Day 4 – FastAPI and Smart Search
+
+### Completed Tasks
+- Created a FastAPI application for KrishiYojana.
+- Implemented GET `/health` to check API status.
+- Implemented GET `/records` to retrieve scheme records.
+- Implemented GET `/records/{record_id}` to retrieve a scheme by ID.
+- Implemented GET `/search` to search agricultural schemes.
+- Implemented POST `/questions` to accept farmer questions.
+- Integrated TF-IDF and cosine similarity for smart search.
+- Used Pandas to analyze agricultural scheme records.
+
+### Data Analysis
+- Total scheme records: 6
+- Unique departments: 1
+- Most common department: Agriculture Department
+
+### How to Run the Project
+
+1. Activate the virtual environment:
+
+```bash
+source .venv/bin/activate
+```
+
+2. Install dependencies:
+
+```bash
+pip install -r requirements.txt
+```
+
+3. Start the FastAPI server:
+
+```bash
+uvicorn app.main:app --reload --reload-dir app
+```
+
+4. Open Swagger documentation:
+
+```text
+http://127.0.0.1:8000/docs
+```
+
+5. Run the Pandas analysis:
+
+```bash
+python -m analysis.explore
+```
+
+### Technologies Used
+- Python
+- FastAPI
+- Pandas
+- Scikit-learn
+- TF-IDF
+- Cosine Similarity
+- JSON
 
