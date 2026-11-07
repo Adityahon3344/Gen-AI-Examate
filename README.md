@@ -1,118 +1,136 @@
-# KrishiYojana
+# 🌾 KrishiYojana – Maharashtra Farmer Scheme Eligibility & Benefits Assistant
 
-## Project Card
+KrishiYojana is a Python-based educational project designed to help farmers explore agricultural government schemes in Maharashtra. It provides information about scheme benefits, eligibility criteria, required documents, and departments.
 
-- **Product:** KrishiYojana
-- **Target User:** Indian Farmers
-- **Problem:** Difficulty finding information about agricultural schemes.
-- **Solution:** A simple Python application to introduce agricultural schemes and demonstrate farmer-related queries.
-- **Data Sources:**
-  - https://www.myscheme.gov.in/
-  - https://pmkisan.gov.in/
-  - https://mahadbt.maharashtra.gov.in/Farmer
+## 🎯 Project Objectives
 
----
-
-## Day 1 – Project Introduction and Basic Python Menu
-
-### Features
-- Introduce the KrishiYojana project and its purpose.
-- Display the project card with product, target user, problem, and solution.
-- Accept farmer-related information using user input.
-- Display customized output using Python f-strings.
-- Provide an interactive menu for basic farmer-related queries.
-- Demonstrate farmer category classification using simple conditions.
-
-### Project Files
-- `day01_intro.py` – Displays the project card and accepts user input using variables and f-strings.
-- `day01_menu.py` – Provides an interactive menu using a while loop and if/elif/else conditions.
-
-### Concepts Used
-- Python variables
-- Input and output
-- F-strings
-- While loop
-- If/elif/else conditions
-- Basic conditional logic
-
-### How to Run
-
-```bash
-python3 day01_intro.py
-python3 day01_menu.py
-```
-
-**Note:** Farmer category classification is a demonstration rule, not official government eligibility advice.
-
----
-
-## Day 2 – Scheme Records and Python Application
-
-### Features
-- Display all available agricultural schemes.
+- Display agricultural government schemes.
 - Search schemes using keywords.
-- Count schemes by department.
-- Retrieve scheme details using Scheme ID.
-- Display scheme benefits and eligibility criteria.
-- Display required documents for each scheme.
+- View scheme details using a unique ID.
+- Display eligibility criteria and required documents.
+- Fetch information from HTML and PDF sources.
+- Clean and store scheme records in JSON format.
 
-### Project Files
-- `data/sample_records.py` – Stores agricultural scheme information using Python lists and dictionaries.
-- `app/records.py` – Contains functions to load, search, count, and retrieve scheme records.
-- `app/cli.py` – Provides an interactive command-line interface for farmers.
+## 🛠️ Technology Stack
 
-### Current Dataset
-6 Maharashtra farmer schemes:
-1. Sub-mission on Farm Mechanization
-2. State Agriculture Mechanization Scheme
-3. Birsa Munda Krishi Kranti Yojana
-4. Per Drop More Crop
-5. PMRKVY – Rainfed Area Development
-6. Dr. Babasaheb Ambedkar Krushi Swavalamban Yojana
+- **Language:** Python
+- **Data Storage:** JSON
+- **Libraries:** Requests, BeautifulSoup4, PyPDF
+- **Concepts:** Functions, Lists, Dictionaries, Dataclasses, Exception Handling
+- **Tools:** VS Code, Git, GitHub
 
-### Concepts Used
-- Python lists and dictionaries
-- Functions
-- Loops
-- Conditional statements
-- Python modules and imports
-- String methods
-- Exception handling
+## 📁 Project Structure
 
-### How to Run
-
-```bash
-python -m app.cli
+```text
+Gen-AI-Examate/
+│
+├── app/
+│   ├── __init__.py
+│   ├── records.py
+│   ├── cli.py
+│   ├── models.py
+│   ├── fetch.py
+│   └── ingest.py
+│
+├── data/
+│   ├── raw/
+│   │   ├── farm_mechanization.html
+│   │   ├── Scheme-SubMissionOnFarmMechanization.pdf
+│   │   ├── DBT_Farmer_User_Manual.pdf
+│   │   └── extracted_text.txt
+│   │
+│   ├── records.json
+│   ├── sample_records.py
+│   └── __init__.py
+│
+├── day01_intro.py
+├── day01_menu.py
+├── requirements.txt
+├── .gitignore
+└── README.md
 ```
 
-### Application Menu
+## 📅 Day 1 – Python Fundamentals
 
-1. Display All Schemes
-2. Search Scheme
-3. Count by Department
-4. Get Scheme by ID
-0. Exit
+**Topics covered:**
+- Variables
+- User input and output
+- F-strings
+- Conditional statements (`if`, `elif`, `else`)
+- While loops
 
----
+**Files created:**
+- `day01_intro.py` – Displays project information and accepts user input.
+- `day01_menu.py` – Creates an interactive menu using conditional statements and loops.
 
-## Technologies Used
+## 📅 Day 2 – Data Management and CLI
 
-- **Programming Language:** Python
-- **Development Environment:** VS Code
-- **Version Control:** Git and GitHub
-- **Data Storage:** Python lists and dictionaries
-- **Interface:** Command-Line Interface (CLI)
+**Topics covered:**
+- Python lists and dictionaries
+- List of dictionaries
+- Functions
+- Searching and filtering records
+- Working with scheme information
 
----
+**Files created:**
+- `data/sample_records.py` – Contains six sample agricultural scheme records.
+- `app/records.py` – Provides functions to load, search, count, and retrieve scheme records.
+- `app/cli.py` – Provides an interactive command-line application.
 
-## Future Scope
+**CLI Features:**
 
-- Add more Maharashtra and Indian government agricultural schemes.
-- Implement farmer-based eligibility checking.
-- Store scheme records in JSON or a database.
-- Develop a user-friendly web application.
-- Integrate AI-based scheme recommendations.
+1. Display all schemes
+2. Search schemes using keywords
+3. Count schemes by department
+4. Get scheme details using ID
+5. Exit the application
 
----
+## 📅 Day 3 – Data Fetching and Ingestion
 
-**Note:** Scheme information is collected for educational and demonstration purposes. Farmers should verify current eligibility, benefits, and documents on official government portals before applying.
+**Topics covered:**
+- HTTP requests using Requests
+- HTML and PDF data extraction
+- Exception handling (`try` and `except`)
+- Python dataclasses
+- JSON data storage
+- Data cleaning and validation
+
+**Files created:**
+- `app/models.py` – Defines the `Record` dataclass.
+- `app/fetch.py` – Downloads HTML and PDF resources.
+- `app/ingest.py` – Extracts text from downloaded HTML and PDF files.
+- `data/raw/` – Stores downloaded source documents.
+- `data/records.json` – Stores structured scheme records.
+
+**Data Sources:**
+
+1. [MahaDBT Farmer Scheme Data](https://mahadbt.maharashtra.gov.in/Farmer/SchemeData/SchemeData?str=E9DDFA703C38E51A23C0254248DAFF28)
+2. [Sub-Mission on Farm Mechanization PDF](https://mahadbt.maharashtra.gov.in/Farmer/PDF/Scheme-SubMissionOnFarmMechanization.pdf)
+
+## ⚙️ Installation and Setup
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/Adityahon3344/Gen-AI-Examate.git
+cd Gen-AI-Examate
+```
+
+### 2. Create a virtual environment
+
+```bash
+python -m venv .venv
+```
+
+### 3. Activate the virtual environment (Mac/Linux)
+
+```bash
+source .venv/bin/activate
+```
+
+### 4. Install dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
