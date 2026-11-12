@@ -1,36 +1,60 @@
-# 🌾 KrishiYojana – Maharashtra Farmer Scheme Eligibility & Benefits Assistant
+# KrishiYojana – Maharashtra Farmer Scheme Eligibility & Benefits Assistant
 
-KrishiYojana is a Python-based educational project designed to help farmers explore agricultural government schemes in Maharashtra. It provides information about scheme benefits, eligibility criteria, required documents, and departments.
+## 1. Project Overview
 
-## 🎯 Project Objectives
+KrishiYojana is a Python-based project designed to help farmers discover agricultural government schemes available in Maharashtra.
 
-- Display agricultural government schemes.
-- Search schemes using keywords.
-- View scheme details using a unique ID.
-- Display eligibility criteria and required documents.
-- Fetch information from HTML and PDF sources.
-- Clean and store scheme records in JSON format.
+The application provides information about agricultural schemes, their benefits, eligibility criteria, and required documents. It also includes a search facility that helps users find relevant schemes using keywords and natural-language questions.
 
-## 🛠️ Technology Stack
+The project is being developed as a learning-based AI application using Python, data processing, FastAPI, and machine learning techniques.
 
-- **Language:** Python
-- **Data Storage:** JSON
-- **Libraries:** Requests, BeautifulSoup4, PyPDF
-- **Concepts:** Functions, Lists, Dictionaries, Dataclasses, Exception Handling
-- **Tools:** VS Code, Git, GitHub
+## 2. Project Objectives
 
-## 📁 Project Structure
+- Collect agricultural government scheme information.
+- Maintain structured records of Maharashtra farmer schemes.
+- Provide information about scheme benefits and eligibility criteria.
+- Display documents required for scheme applications.
+- Implement keyword-based scheme searching.
+- Develop REST APIs using FastAPI.
+- Implement intelligent scheme search using TF-IDF and cosine similarity.
+- Analyze scheme records using Pandas.
+- Build a foundation for an AI-powered farmer assistance system.
+
+## 3. Technologies Used
+
+| Technology | Purpose |
+|---|---|
+| Python | Core programming language |
+| FastAPI | Backend API development |
+| Uvicorn | ASGI server |
+| Pandas | Data analysis |
+| Scikit-learn | TF-IDF and cosine similarity |
+| Requests | Downloading web resources |
+| BeautifulSoup | HTML data extraction |
+| PyPDF | PDF text extraction |
+| JSON | Structured data storage |
+| Git | Version control |
+| GitHub | Source code management |
+| VS Code | Development environment |
+
+## 4. Project Structure
 
 ```text
 Gen-AI-Examate/
 │
+├── analysis/
+│   ├── __init__.py
+│   └── explore.py
+│
 ├── app/
 │   ├── __init__.py
+│   ├── main.py
 │   ├── records.py
 │   ├── cli.py
 │   ├── models.py
 │   ├── fetch.py
-│   └── ingest.py
+│   ├── ingest.py
+│   └── smart_search.py
 │
 ├── data/
 │   ├── raw/
@@ -50,144 +74,320 @@ Gen-AI-Examate/
 └── README.md
 ```
 
-## 📅 Day 1 – Python Fundamentals
+## 5. Dataset Information
 
-**Topics covered:**
-- Variables
-- User input and output
-- F-strings
-- Conditional statements (`if`, `elif`, `else`)
-- While loops
+The project currently contains **19 agricultural scheme records** in `data/sample_records.py`.
+
+Each scheme record contains the following fields:
+
+| Field | Description |
+|---|---|
+| `id` | Unique scheme identification number |
+| `scheme_name` | Name of the agricultural scheme |
+| `department` | Implementing department |
+| `benefit` | Description of scheme benefits |
+| `eligibility` | Eligibility conditions |
+| `required_documents` | Documents required for application |
+| `source_url` | Reference URL for scheme information |
+
+### Complete List of 19 Scheme Records
+
+The following 19 scheme records are included in the current dataset:
+
+| ID | Scheme Name |
+|---:|---|
+| 1 | Sub-mission on Farm Mechanization |
+| 2 | State Agriculture Mechanization Scheme |
+| 3 | Birsa Munda Krishi Kranti Yojana |
+| 4 | PMRKVY - Rainfed Area Development (RAD) |
+| 5 | Dr. Babasaheb Ambedkar Krushi Swavalamban Yojana |
+| 6 | Pradhan Mantri Krishi Sinchayee Yojana - Per Drop More Crop |
+| 7 | National Food Security Mission (NFSM) - Food Grains |
+| 8 | Mission for Integrated Development of Horticulture (MIDH) |
+| 9 | Bhausaheb Fundkar Phalbaag Lagvad Yojana |
+| 10 | Rashtriya Krushi Vikas Yojana (RKVY) - RAFTAAR |
+| 11 | Chief Minister Sustainable Agriculture Irrigation Scheme |
+| 12 | Chief Minister Sustainable Agriculture Irrigation Scheme - Individual Farm Pond |
+| 13 | Dr. Shyamaprasad Mukherjee Jan-Van Vikas Scheme |
+| 14 | Gopinath Munde Shetkari Apghat Suraksha Sanugrah Anudan Yojana |
+| 15 | Chief Minister Agro and Food Processing Scheme |
+| 16 | Kaju Kalma Vatap Scheme |
+| 17 | RKVY - Sugarcane Harvester Subsidy |
+| 18 | NFSM - Oilseed and Oil Palm |
+| 19 | NFSM - Cotton and Sugarcane |
+
+**Dataset validation:**
+- Total records: 19
+- Unique IDs: 19
+- ID range: 1–19
+- Storage file: `data/sample_records.py`
+
+Note: Scheme details, eligibility conditions, benefits, and document requirements should be verified against the latest official government guidelines before being used for actual farmer applications.
+
+## 6. Development Progress
+
+### Day 1 – Python Fundamentals
+
+- Created the KrishiYojana project introduction.
+- Practiced Python variables and user input.
+- Used formatted strings (f-strings).
+- Developed an interactive command-line menu.
+- Implemented conditional statements.
+- Practiced while loops and basic program flow.
 
 **Files created:**
-- `day01_intro.py` – Displays project information and accepts user input.
-- `day01_menu.py` – Creates an interactive menu using conditional statements and loops.
+- `day01_intro.py`
+- `day01_menu.py`
 
-## 📅 Day 2 – Data Management and CLI
+### Day 2 – Dataset Creation and CLI Development
 
-**Topics covered:**
-- Python lists and dictionaries
-- List of dictionaries
-- Functions
-- Searching and filtering records
-- Working with scheme information
+- Created structured agricultural scheme records.
+- Used Python lists and dictionaries.
+- Expanded the dataset from 6 to 19 records.
+- Implemented scheme searching.
+- Implemented department-wise scheme counting.
+- Implemented scheme retrieval using unique IDs.
+- Developed an interactive command-line application.
 
-**Files created:**
-- `data/sample_records.py` – Contains six sample agricultural scheme records.
-- `app/records.py` – Provides functions to load, search, count, and retrieve scheme records.
-- `app/cli.py` – Provides an interactive command-line application.
+**Files created or updated:**
+- `data/sample_records.py`
+- `app/records.py`
+- `app/cli.py`
 
-**CLI Features:**
+### Day 3 – Data Collection and Extraction
 
-1. Display all schemes
-2. Search schemes using keywords
-3. Count schemes by department
-4. Get scheme details using ID
-5. Exit the application
+- Downloaded agricultural scheme resources.
+- Collected HTML and PDF documents.
+- Used Requests for downloading resources.
+- Used BeautifulSoup for HTML extraction.
+- Used PyPDF for PDF text extraction.
+- Saved extracted text for further processing.
+- Created a Python dataclass model for scheme records.
 
-## 📅 Day 3 – Data Fetching and Ingestion
+**Files created or updated:**
+- `app/fetch.py`
+- `app/ingest.py`
+- `app/models.py`
+- `data/raw/`
 
-**Topics covered:**
-- HTTP requests using Requests
-- HTML and PDF data extraction
-- Exception handling (`try` and `except`)
-- Python dataclasses
-- JSON data storage
-- Data cleaning and validation
+### Day 4 – FastAPI and Intelligent Search
 
-**Files created:**
-- `app/models.py` – Defines the `Record` dataclass.
-- `app/fetch.py` – Downloads HTML and PDF resources.
-- `app/ingest.py` – Extracts text from downloaded HTML and PDF files.
-- `data/raw/` – Stores downloaded source documents.
-- `data/records.json` – Stores structured scheme records.
+- Created a FastAPI backend application.
+- Implemented REST API endpoints.
+- Integrated JSON-based scheme records.
+- Implemented TF-IDF vectorization.
+- Used cosine similarity for ranking search results.
+- Created a farmer question endpoint.
+- Used Pandas for dataset analysis.
+- Tested API endpoints through Swagger UI.
 
-**Data Sources:**
+**Files created or updated:**
+- `app/main.py`
+- `app/smart_search.py`
+- `analysis/explore.py`
 
-1. [MahaDBT Farmer Scheme Data](https://mahadbt.maharashtra.gov.in/Farmer/SchemeData/SchemeData?str=E9DDFA703C38E51A23C0254248DAFF28)
-2. [Sub-Mission on Farm Mechanization PDF](https://mahadbt.maharashtra.gov.in/Farmer/PDF/Scheme-SubMissionOnFarmMechanization.pdf)
+## 7. API Endpoints
 
-## ⚙️ Installation and Setup
+The FastAPI application provides the following endpoints:
 
-### 1. Clone the repository
+| HTTP Method | Endpoint | Description |
+|---|---|---|
+| GET | `/health` | Check API status |
+| GET | `/records` | Retrieve scheme records |
+| GET | `/records/{record_id}` | Retrieve a scheme using its ID |
+| GET | `/search?q=tractor` | Search schemes using TF-IDF |
+| POST | `/questions` | Find schemes relevant to a farmer's question |
+
+### Example API Requests
+
+**1. Health Check**
+
+```http
+GET /health
+```
+
+**2. Get All Records**
+
+```http
+GET /records?limit=10
+```
+
+**3. Get Scheme by ID**
+
+```http
+GET /records/1
+```
+
+**4. Search Schemes**
+
+```http
+GET /search?q=tractor
+```
+
+**5. Ask a Farmer Question**
+
+```http
+POST /questions
+```
+
+Request body:
+
+```json
+{
+  "question": "Which schemes provide financial assistance for tractors?"
+}
+```
+
+## 8. Installation and Setup
+
+### Step 1: Clone the Repository
 
 ```bash
 git clone https://github.com/Adityahon3344/Gen-AI-Examate.git
+```
+
+### Step 2: Navigate to the Project Directory
+
+```bash
 cd Gen-AI-Examate
 ```
 
-### 2. Create a virtual environment
+### Step 3: Create a Virtual Environment
 
 ```bash
 python -m venv .venv
 ```
 
-### 3. Activate the virtual environment (Mac/Linux)
+### Step 4: Activate the Virtual Environment
+
+For macOS and Linux:
 
 ```bash
 source .venv/bin/activate
 ```
 
-### 4. Install dependencies
+For Windows:
 
 ```bash
-pip install -r requirements.txt
+.venv\Scripts\activate
 ```
-## Day 4 – FastAPI and Smart Search
 
-### Completed Tasks
-- Created a FastAPI application for KrishiYojana.
-- Implemented GET `/health` to check API status.
-- Implemented GET `/records` to retrieve scheme records.
-- Implemented GET `/records/{record_id}` to retrieve a scheme by ID.
-- Implemented GET `/search` to search agricultural schemes.
-- Implemented POST `/questions` to accept farmer questions.
-- Integrated TF-IDF and cosine similarity for smart search.
-- Used Pandas to analyze agricultural scheme records.
-
-### Data Analysis
-- Total scheme records: 6
-- Unique departments: 1
-- Most common department: Agriculture Department
-
-### How to Run the Project
-
-1. Activate the virtual environment:
+### Step 5: Install Dependencies
 
 ```bash
-source .venv/bin/activate
+python -m pip install -r requirements.txt
 ```
 
-2. Install dependencies:
+## 9. How to Run the Project
+
+### Run the Command-Line Application
 
 ```bash
-pip install -r requirements.txt
+python -m app.cli
 ```
 
-3. Start the FastAPI server:
-
-```bash
-uvicorn app.main:app --reload --reload-dir app
-```
-
-4. Open Swagger documentation:
-
-```text
-http://127.0.0.1:8000/docs
-```
-
-5. Run the Pandas analysis:
+### Run the Data Analysis Script
 
 ```bash
 python -m analysis.explore
 ```
 
-### Technologies Used
-- Python
-- FastAPI
-- Pandas
-- Scikit-learn
-- TF-IDF
-- Cosine Similarity
-- JSON
+### Run the FastAPI Application
 
+```bash
+uvicorn app.main:app --reload
+```
+
+The API will be available at:
+
+```text
+http://127.0.0.1:8000
+```
+
+### Open Swagger API Documentation
+
+```text
+http://127.0.0.1:8000/docs
+```
+
+Swagger UI allows users to explore and test the available API endpoints.
+
+## 10. Intelligent Search Methodology
+
+KrishiYojana uses TF-IDF (Term Frequency-Inverse Document Frequency) and cosine similarity to identify relevant agricultural schemes.
+
+### Search Process
+
+1. Accept a search query or farmer question.
+2. Convert scheme information into text documents.
+3. Apply TF-IDF vectorization.
+4. Calculate cosine similarity between the query and scheme records.
+5. Rank matching schemes based on similarity scores.
+6. Return the most relevant scheme records.
+
+This provides a basic intelligent search mechanism for finding relevant agricultural schemes.
+
+## 11. Data Analysis Using Pandas
+
+Pandas is used to analyze the available scheme records.
+
+The analysis script displays:
+
+- Total number of schemes.
+- Number of unique departments.
+- Department-wise scheme distribution.
+- Scheme names and their departments.
+
+Run the analysis using:
+
+```bash
+python -m analysis.explore
+```
+
+## 12. Current Project Status
+
+| Component | Status |
+|---|---|
+| Python Fundamentals | Completed |
+| Dataset Creation | Completed |
+| 19 Scheme Records | Added |
+| Command-Line Interface | Implemented |
+| Data Collection | Implemented |
+| HTML and PDF Extraction | Implemented |
+| FastAPI Backend | Implemented |
+| TF-IDF Smart Search | Implemented |
+| Pandas Data Analysis | Implemented |
+
+## 13. Future Enhancements
+
+- Add more verified Maharashtra agricultural schemes.
+- Improve scheme eligibility matching.
+- Develop a farmer-friendly web interface.
+- Integrate an AI-powered question-answering system.
+- Add multilingual support for Marathi, Hindi, and English.
+- Improve recommendation accuracy.
+- Integrate a database for managing scheme records.
+- Add automated data updates from official government sources.
+
+## 14. Official References
+
+- [Maharashtra MahaDBT Farmer Portal](https://mahadbt.maharashtra.gov.in/Farmer/)
+- [Maharashtra Government Official Portal](https://www.maharashtra.gov.in/)
+
+## 15. GitHub Repository
+
+**Repository:** [Gen-AI-Examate](https://github.com/Adityahon3344/Gen-AI-Examate)
+
+**GitHub Username:** Adityahon3344
+
+## 16. Disclaimer
+
+KrishiYojana is an educational project and is not an official government application.
+
+The scheme information provided by this project should not be treated as a final determination of eligibility or benefit entitlement. Farmers should verify scheme details, eligibility conditions, benefits, and required documents through the relevant government departments and official portals.
+
+---
+
+**Project Name:** KrishiYojana – Maharashtra Farmer Scheme Eligibility & Benefits Assistant
+
+**Developed Using:** Python, FastAPI, Pandas, and Scikit-learn.
