@@ -1,12 +1,13 @@
 
 from fastapi import FastAPI, HTTPException, Query
 from dataclasses import asdict
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from app.records import load_json_records
 from app.smart_search import smart_search
 
 
+# Initialize FastAPI application
 app = FastAPI(
     title="KrishiYojana API",
     description="Maharashtra Farmer Scheme Eligibility and Benefits Assistant",
@@ -17,6 +18,9 @@ app = FastAPI(
 # 1. Health Check API
 @app.get("/health")
 def health_check():
+    """
+    Check whether the KrishiYojana API is running.
+    """
     return {
         "status": "success",
         "message": "KrishiYojana API is running!"
@@ -26,6 +30,9 @@ def health_check():
 # 2. Get All Records API
 @app.get("/records")
 def get_all_records(limit: int = Query(default=10, ge=1)):
+    """
+    Retrieve agricultural scheme records.
+    """
     records = load_json_records()
 
     return {
@@ -37,6 +44,9 @@ def get_all_records(limit: int = Query(default=10, ge=1)):
 # 3. Get Record By ID API
 @app.get("/records/{record_id}")
 def get_record_by_id(record_id: int):
+    """
+    Retrieve a particular agricultural scheme using its ID.
+    """
     records = load_json_records()
 
     for record in records:
@@ -52,6 +62,9 @@ def get_record_by_id(record_id: int):
 # 4. Smart Search API using TF-IDF
 @app.get("/search")
 def search_records(q: str = Query(..., min_length=1)):
+    """
+    Search agricultural schemes using TF-IDF and cosine similarity.
+    """
     records = load_json_records()
 
     results = smart_search(records, q, top_k=5)
@@ -65,12 +78,19 @@ def search_records(q: str = Query(..., min_length=1)):
 
 # 5. Farmer Question Request Model
 class QuestionRequest(BaseModel):
-    question: str
+    question: str = Field(
+        ...,
+        min_length=1,
+        description="Enter a farmer's agricultural scheme question"
+    )
 
 
 # 6. Farmer Questions API using Smart Search
 @app.post("/questions")
 def ask_question(request: QuestionRequest):
+    """
+    Accept a farmer's question and find relevant schemes.
+    """
     records = load_json_records()
 
     question = request.question.strip()
