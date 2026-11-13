@@ -1,26 +1,33 @@
 
-from fastapi import FastAPI, HTTPException, Query
+import json
+from pathlib import Path
 from dataclasses import asdict
+
+from fastapi import FastAPI, HTTPException, Query
 from pydantic import BaseModel, Field
 
 from app.records import load_json_records
 from app.smart_search import smart_search
+from app.llm import generate_response
 
 
 # Initialize FastAPI application
 app = FastAPI(
     title="KrishiYojana API",
     description="Maharashtra Farmer Scheme Eligibility and Benefits Assistant",
-    version="1.0.0"
+    version="1.1.0"
 )
+
+
+# Prompt directory
+BASE_DIR = Path(__file__).resolve().parent.parent
+PROMPTS_DIR = BASE_DIR / "prompts"
 
 
 # 1. Health Check API
 @app.get("/health")
 def health_check():
-    """
-    Check whether the KrishiYojana API is running.
-    """
+    """Check whether the KrishiYojana API is running."""
     return {
         "status": "success",
         "message": "KrishiYojana API is running!"
@@ -30,9 +37,7 @@ def health_check():
 # 2. Get All Records API
 @app.get("/records")
 def get_all_records(limit: int = Query(default=10, ge=1)):
-    """
-    Retrieve agricultural scheme records.
-    """
+    """Retrieve agricultural scheme records."""
     records = load_json_records()
 
     return {
@@ -44,9 +49,7 @@ def get_all_records(limit: int = Query(default=10, ge=1)):
 # 3. Get Record By ID API
 @app.get("/records/{record_id}")
 def get_record_by_id(record_id: int):
-    """
-    Retrieve a particular agricultural scheme using its ID.
-    """
+    """Retrieve an agricultural scheme using its ID."""
     records = load_json_records()
 
     for record in records:
@@ -62,11 +65,8 @@ def get_record_by_id(record_id: int):
 # 4. Smart Search API using TF-IDF
 @app.get("/search")
 def search_records(q: str = Query(..., min_length=1)):
-    """
-    Search agricultural schemes using TF-IDF and cosine similarity.
-    """
+    """Search schemes using TF-IDF and cosine similarity."""
     records = load_json_records()
-
     results = smart_search(records, q, top_k=5)
 
     return {
@@ -88,11 +88,7 @@ class QuestionRequest(BaseModel):
 # 6. Farmer Questions API using Smart Search
 @app.post("/questions")
 def ask_question(request: QuestionRequest):
-    """
-    Accept a farmer's question and find relevant schemes.
-    """
-    records = load_json_records()
-
+    """Find relevant agricultural schemes for a farmer's question."""
     question = request.question.strip()
 
     if not question:
@@ -101,6 +97,7 @@ def ask_question(request: QuestionRequest):
             detail="Question cannot be empty"
         )
 
+    records = load_json_records()
     results = smart_search(records, question, top_k=5)
 
     return {
@@ -115,3 +112,120 @@ def ask_question(request: QuestionRequest):
             else "No matching schemes found."
         )
     }
+
+
+# 7. Load Prompt Files
+def load_prompt(filename):
+    """Read a prompt file from the prompts directory."""
+    prompt_path = PROMPTS_DIR / filename
+
+    try:
+        return prompt_path.read_text(encoding="utf-8")
+    except OSError:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Prompt file not found: {filename}"
+        )
+
+
+# 8. Chat API using Groq LLM
+@app.post("/chat")
+def chat_with_farmer(request: QuestionRequest):
+    """Generate an AI answer using Groq and scheme records."""
+
+    question = request.question.strip()
+
+    if not question:
+        raise HTTPException(
+            status_code=400,
+            detail="Question cannot be empty"
+        )
+
+    # Load system and task prompts
+    system_prompt = load_prompt("system_prompt.txt")
+    task_prompt = load_prompt("task_prompt_1.txt")
+
+    # Retrieve relevant scheme records
+    records = load_json_records()
+    results = smart_search(records, question, top_k=5)
+
+    # Prepare scheme context
+    context = "\n\n".join(
+        f"Scheme: {record.scheme_name}\n"
+        f"Department: {record.department}\n"
+        f"Benefits: {record.benefit}\n"
+        f"Eligibility: {', '.join(record.eligibility)}\n"
+        f"Documents: {', '.join(record.required_documents)}"
+        for record in results
+    )
+
+    if not context:
+        context = "No matching scheme information was found."
+
+    # Prepare user prompt
+    user_prompt = task_prompt.format(
+        question=question,
+        context=context
+    )
+
+    # Request JSON output from Groq
+    json_instruction = """
+Return only valid JSON without Markdown code blocks.
+
+Use exactly this structure:
+{
+    "answer": "Answer for the farmer",
+    "confidence": 0.0,
+    "follow_up": "A relevant follow-up question or null"
+}
+
+Rules:
+- Confidence must be a number between 0 and 1.
+- Do not invent scheme information.
+- Use only the provided scheme context.
+- If no relevant information exists, clearly state that.
+- Use null for follow_up if no follow-up is needed.
+"""
+
+    try:
+        ai_response = generate_response(
+            user_prompt + "\n\n" + json_instruction,
+            system_prompt
+        )
+
+        result = json.loads(ai_response)
+
+        # Validate response fields
+        answer = result.get("answer")
+        confidence = result.get("confidence")
+        follow_up = result.get("follow_up")
+
+        if (
+            not isinstance(answer, str)
+            or isinstance(confidence, bool)
+            or not isinstance(confidence, (int, float))
+            or not 0 <= confidence <= 1
+            or not (follow_up is None or isinstance(follow_up, str))
+        ):
+            raise ValueError("Invalid JSON response structure")
+
+        return {
+            "answer": answer,
+            "confidence": float(confidence),
+            "follow_up": follow_up
+        }
+
+    except json.JSONDecodeError:
+        raise HTTPException(
+            status_code=502,
+            detail="Groq returned an invalid JSON response"
+        )
+
+    except HTTPException:
+        raise
+
+    except Exception:
+        raise HTTPException(
+            status_code=502,
+            detail="Unable to generate a response from the AI service"
+        )

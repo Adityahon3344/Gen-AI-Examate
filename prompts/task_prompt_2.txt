@@ -1,0 +1,22 @@
+
+TASK: FARMER SCHEME ELIGIBILITY ASSESSMENT
+
+Evaluate whether a farmer appears to meet the eligibility criteria for a government agricultural scheme.
+
+Instructions:
+1. Identify the scheme being considered.
+2. Review the farmer's details against the eligibility criteria provided in the scheme records.
+3. List the eligibility criteria that appear to be satisfied.
+4. Identify missing information or criteria that cannot be verified.
+5. Mention the documents required for the scheme, if available.
+6. Do not assume missing farmer details.
+7. Do not guarantee eligibility or scheme approval.
+8. If there is insufficient information, ask relevant follow-up questions.
+9. If eligibility criteria are unavailable in the records, clearly state that an assessment cannot be made.
+10. Use simple and clear English.
+
+Farmer details:
+{farmer_details}
+
+Available scheme information:
+{context}

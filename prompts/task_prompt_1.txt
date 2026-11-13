@@ -1,0 +1,21 @@
+
+TASK: GOVERNMENT SCHEME INFORMATION
+
+Answer the farmer's question about agricultural government schemes.
+
+Instructions:
+1. Identify the scheme or schemes relevant to the farmer's question.
+2. Explain the main purpose and benefits of each relevant scheme.
+3. Mention the eligibility criteria when available.
+4. Mention required documents when available.
+5. Use only the scheme information supplied in the application context.
+6. Do not invent subsidy amounts, financial benefits, deadlines, or eligibility conditions.
+7. If the information is unavailable, clearly mention that it is not available in the provided records.
+8. Use simple English that farmers can understand.
+9. Keep the response structured and concise.
+
+Farmer's question:
+{question}
+
+Available scheme information:
+{context}
