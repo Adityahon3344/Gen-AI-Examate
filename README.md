@@ -8,7 +8,7 @@
 
 **Primary Language:** Python
 
-**Development Status:** Day 1–Day 6 Completed
+**Development Status:** Day 1–Day 7 Completed
 
 ---
 
@@ -27,8 +27,14 @@ The current implementation includes:
 - TF-IDF-based intelligent search.
 - Groq-powered LLM response generation.
 - Prompt engineering and evaluation.
+- PDF and HTML document processing.
+- Document chunking with overlapping text segments.
+- Sentence Transformer-based text embeddings.
+- Semantic search using vector similarity.
+- Persistent vector storage using ChromaDB.
+- FastAPI semantic search endpoint.
 
-The project is being developed incrementally, focusing on Python fundamentals, data processing, API development, information retrieval, and Large Language Model integration.
+The project is being developed incrementally, focusing on Python fundamentals, data processing, API development, information retrieval, embeddings, vector databases, and Large Language Model integration.
 
 ## 2. Project Objectives
 
@@ -42,6 +48,11 @@ The project is being developed incrementally, focusing on Python fundamentals, d
 - Integrate an LLM using the Groq API.
 - Develop prompt templates for farmer assistance.
 - Evaluate different prompt versions.
+- Process PDF and HTML documents.
+- Implement document chunking and text preprocessing.
+- Generate semantic embeddings using Sentence Transformers.
+- Store document embeddings in ChromaDB.
+- Implement semantic search for farmer questions.
 - Prepare the foundation for an AI-powered farmer assistance system.
 
 ## 3. Technology Stack
@@ -62,7 +73,12 @@ The project is being developed incrementally, focusing on Python fundamentals, d
 | LLM Integration | Groq Python SDK |
 | Prompt Engineering | System Prompts, Task Prompts |
 | Environment Variables | python-dotenv |
-| Evaluation | Prompt Comparison |
+| Embedding Model | Sentence Transformers |
+| Embedding Model Name | all-MiniLM-L6-v2 |
+| Vector Database | ChromaDB |
+| Semantic Search | Vector Similarity Search |
+| Document Chunking | Text Chunking with Overlap |
+| Evaluation | Prompt Comparison and Semantic Search Evaluation |
 | Version Control | Git |
 | Repository Hosting | GitHub |
 | Development Environment | Visual Studio Code |
@@ -85,7 +101,11 @@ Gen-AI-Examate/
 │   ├── fetch.py
 │   ├── ingest.py
 │   ├── smart_search.py
-│   └── llm.py
+│   ├── llm.py
+│   ├── chunking.py
+│   ├── embed.py
+│   ├── semantic_search.py
+│   └── vectorstore.py
 │
 ├── data/
 │   ├── raw/
@@ -95,8 +115,9 @@ Gen-AI-Examate/
 │   │   └── extracted_text.txt
 │   │
 │   ├── records.json
+│   ├── chunks.json
 │   ├── sample_records.py
-│   └── __init__.py
+│   └── chroma_db/           # Generated locally; ignored by Git
 │
 ├── docs/
 │   ├── how_llms_work.md
@@ -112,7 +133,8 @@ Gen-AI-Examate/
 ├── eval/
 │   ├── run_prompt_eval.py
 │   ├── prompt_compare.md
-│   └── results.json
+│   ├── results.json
+│   └── search_results.md
 │
 ├── day01_intro.py
 ├── day01_menu.py
@@ -343,11 +365,80 @@ The project currently maintains 19 agricultural scheme records in `data/sample_r
 
 *Note: Prompt comparison is preliminary. Generated responses require manual review and verification against official scheme information before drawing conclusions about accuracy.*
 
+### Day 7 – Document Chunking, Embeddings and Semantic Search
+
+**Objective:** Develop a document processing and semantic retrieval pipeline using text chunking, embeddings, and ChromaDB to improve information retrieval in the KrishiYojana application.
+
+**Implementation:**
+
+- Created `app/chunking.py` to process agricultural scheme-related PDF and HTML documents.
+- Extracted PDF text page by page using PyPDF.
+- Extracted HTML content using BeautifulSoup.
+- Implemented text chunking with a chunk size of 1000 words and an overlap of 150 words.
+- Preserved document metadata, including source filename, page number, and document title.
+- Generated 136 document chunks from the available raw documents.
+- Created `app/embed.py` to generate text embeddings using Sentence Transformers.
+- Integrated the `all-MiniLM-L6-v2` embedding model.
+- Generated 384-dimensional embeddings for all 136 chunks.
+- Stored the generated embeddings in `data/chunks.json`.
+- Created `app/semantic_search.py` to perform semantic searches using the 10 predefined farmer questions.
+- Retrieved the top 3 matching document chunks for each question.
+- Recorded search results, similarity scores, source filenames, page numbers, and matched text in `eval/search_results.md`.
+- Installed and integrated ChromaDB as a persistent vector database.
+- Created `app/vectorstore.py` to store document embeddings and metadata in a ChromaDB collection.
+- Indexed all 136 document chunks in the persistent collection `krishiyojana_documents`.
+- Integrated semantic search into the FastAPI application.
+- Added the `GET /search/semantic` endpoint.
+- Tested semantic search through the API using farmer-related questions.
+- Updated `.gitignore` to exclude generated ChromaDB database files and private environment files.
+
+**Deliverables:**
+
+- `app/chunking.py`
+- `app/embed.py`
+- `app/semantic_search.py`
+- `app/vectorstore.py`
+- `app/main.py`
+- `data/chunks.json`
+- `eval/search_results.md`
+- `requirements.txt`
+- `.gitignore`
+
+**Learning Outcomes:** Document processing, text extraction, overlapping chunking, semantic embeddings, Sentence Transformers, vector databases, ChromaDB, cosine distance, semantic search, and FastAPI integration.
+
+**Day 7 Implementation Summary:**
+
+| Metric | Result |
+|---|---:|
+| Total Raw Documents Processed | PDF and HTML documents |
+| Total Generated Chunks | 136 |
+| Chunk Size | 1000 words |
+| Chunk Overlap | 150 words |
+| Embedding Model | all-MiniLM-L6-v2 |
+| Embedding Dimensions | 384 |
+| Total Embedded Chunks | 136 |
+| Vector Database | ChromaDB |
+| Collection Name | `krishiyojana_documents` |
+| Total Indexed Chunks | 136 |
+| Test Questions | 10 |
+| Results per Question | Top 3 |
+| Semantic Search Endpoint | `GET /search/semantic` |
+
+**Semantic Search Testing:**
+
+- Tested semantic search with 10 predefined farmer questions.
+- Retrieved the top 3 matching document chunks for each question.
+- Recorded similarity scores and source metadata.
+- Verified the semantic search API using a tractor and agricultural machinery-related question.
+- Confirmed that the API returns matching text, source filename, page number, document title, and similarity score.
+
+*Note: Semantic similarity scores are ranking indicators, not probabilities of factual correctness. Some questions may retrieve irrelevant or incomplete chunks because the current source documents do not cover all scheme topics equally. Current application deadlines and scheme eligibility must be verified using official government sources.*
+
 ---
 
 ## 7. FastAPI Implementation
 
-The application currently exposes six API endpoints.
+The application currently exposes seven API endpoints.
 
 | Method | Endpoint | Functionality |
 |---|---|---|
@@ -357,6 +448,7 @@ The application currently exposes six API endpoints.
 | GET | `/search` | Perform TF-IDF-based scheme search |
 | POST | `/questions` | Retrieve schemes relevant to a farmer's question |
 | POST | `/chat` | Generate an LLM-based response using retrieved scheme context |
+| GET | `/search/semantic` | Perform semantic search using ChromaDB |
 
 ### Health Check API
 
@@ -408,6 +500,41 @@ The chat endpoint accepts a farmer's question, retrieves relevant scheme informa
 
 *Note: The confidence field is not a calibrated probability of factual correctness.*
 
+### Semantic Search API
+
+**Endpoint:** `GET /search/semantic`
+
+The semantic search endpoint accepts a farmer's question, generates its embedding using Sentence Transformers, and searches the persistent ChromaDB collection for relevant document chunks.
+
+**Example Request:**
+
+```bash
+curl -G "http://127.0.0.1:8000/search/semantic" \
+  --data-urlencode "q=Which government schemes provide financial assistance for purchasing agricultural machinery and tractors?" \
+  --data-urlencode "top_k=3"
+```
+
+**Query Parameters:**
+
+| Parameter | Description | Default |
+|---|---|---|
+| q | Farmer's search question | Required |
+| top_k | Number of matching chunks | 3 |
+
+**Response Fields:**
+
+| Field | Description |
+|---|---|
+| query | Original search question |
+| total_results | Number of returned results |
+| results | List of matching document chunks |
+| id | Unique chunk identifier |
+| text | Retrieved document text |
+| source | Original document filename |
+| page | Source PDF page number, when available |
+| title | Document title |
+| similarity_score | Similarity ranking score |
+
 ### API Documentation
 
 Interactive API documentation is available through FastAPI Swagger UI.
@@ -420,11 +547,11 @@ http://127.0.0.1:8000/docs
 
 ## 8. Intelligent Search and LLM Approach
 
-The current application combines information retrieval with LLM-based response generation.
+The current application combines structured information retrieval, semantic search, and LLM-based response generation.
 
-### Information Retrieval Workflow
+### TF-IDF Information Retrieval Workflow
 
-The search implementation uses TF-IDF and cosine similarity.
+The original search implementation uses TF-IDF and cosine similarity.
 
 1. Receive a search query or farmer question.
 2. Load the available scheme records.
@@ -434,44 +561,98 @@ The search implementation uses TF-IDF and cosine similarity.
 6. Rank matching records by similarity.
 7. Return the top relevant results.
 
+### Semantic Search Workflow
+
+The Day 7 implementation introduces document-based semantic retrieval.
+
+1. Load the available PDF and HTML documents.
+2. Extract document text.
+3. Divide the extracted text into overlapping chunks.
+4. Preserve source, page number, and title metadata.
+5. Generate embeddings using Sentence Transformers.
+6. Store embeddings and document metadata in ChromaDB.
+7. Receive a farmer's search question.
+8. Generate an embedding for the question.
+9. Search the ChromaDB collection for similar document vectors.
+10. Retrieve the top matching document chunks.
+11. Return matching text, metadata, and similarity scores.
+
 ### LLM Response Generation Workflow
 
 1. Receive a farmer's question through the chat API.
-2. Retrieve relevant scheme records using the search functionality.
+2. Retrieve relevant scheme records using the existing search functionality.
 3. Prepare the retrieved information as context.
 4. Combine the context with the task prompt.
 5. Send the prompt to the Groq LLM.
 6. Generate a natural-language response.
 7. Return the response through the FastAPI endpoint.
 
-### Overall Architecture
+*Note: The current `/chat` implementation uses the structured scheme retrieval workflow. The ChromaDB semantic search endpoint is implemented separately and has not yet been connected to the `/chat` response-generation workflow.*
+
+### Overall Architecture – Existing Chat Workflow
 
 ```text
 Farmer Question
        |
        v
-   FastAPI API
+    FastAPI API
        |
        v
-  TF-IDF Search
+   TF-IDF Search
        |
        v
 Relevant Scheme Records
        |
        v
-  Task Prompt
+   Task Prompt
        |
        v
-    Groq LLM
+     Groq LLM
        |
        v
-Generated Response
+ Generated Response
        |
        v
-   API Response
+    API Response
 ```
 
-This is an early retrieval-plus-generation workflow. It provides the foundation for further Retrieval-Augmented Generation (RAG) development.
+### Semantic Retrieval Architecture
+
+```text
+PDF and HTML Documents
+          |
+          v
+    Text Extraction
+          |
+          v
+    Text Chunking
+          |
+          v
+ Sentence Transformer
+          |
+          v
+   Text Embeddings
+          |
+          v
+       ChromaDB
+          |
+          v
+    Farmer Question
+          |
+          v
+   Query Embedding
+          |
+          v
+  Semantic Similarity
+          |
+          v
+ Relevant Document Chunks
+          |
+          v
+    Search Results
+```
+
+The semantic retrieval implementation provides a foundation for further Retrieval-Augmented Generation (RAG) development.
 
 ---
 
@@ -518,6 +699,33 @@ Two prompt versions are evaluated using the same set of 10 farmer questions.
 The evaluation script generates 20 responses and stores them in `eval/results.json`.
 
 The preliminary comparison is documented in `eval/prompt_compare.md`.
+
+### Document Embeddings
+
+Document embeddings convert text into numerical vectors that represent semantic information.
+
+The project uses the Sentence Transformers model:
+
+`sentence-transformers/all-MiniLM-L6-v2`
+
+The generated embeddings have 384 dimensions and are used for semantic retrieval.
+
+### Vector Database
+
+ChromaDB is used as the persistent vector database.
+
+The project stores:
+
+- Unique chunk IDs
+- Document text
+- Text embeddings
+- Source filenames
+- Page numbers
+- Document titles
+
+The ChromaDB collection is named:
+
+`krishiyojana_documents`
 
 ---
 
@@ -603,6 +811,38 @@ python sync_records.py
 python eval/run_prompt_eval.py
 ```
 
+### Run Document Chunking
+
+```bash
+python -m app.chunking
+```
+
+This processes the PDF and HTML files in `data/raw/` and generates `data/chunks.json`.
+
+### Generate Document Embeddings
+
+```bash
+python -m app.embed
+```
+
+This generates 384-dimensional embeddings for the document chunks.
+
+### Run Semantic Search Evaluation
+
+```bash
+python -m app.semantic_search
+```
+
+This evaluates the 10 predefined farmer questions and saves the results in `eval/search_results.md`.
+
+### Create ChromaDB Vector Database
+
+```bash
+python -m app.vectorstore
+```
+
+This indexes the document chunks and embeddings into the persistent ChromaDB collection.
+
 ### Start FastAPI Server
 
 ```bash
@@ -616,6 +856,16 @@ uvicorn app.main:app --reload
 **Swagger Documentation:**
 
 `http://127.0.0.1:8000/docs`
+
+### Test Semantic Search API
+
+```bash
+curl -G "http://127.0.0.1:8000/search/semantic" \
+  --data-urlencode "q=Which government schemes provide financial assistance for purchasing agricultural machinery and tractors?" \
+  --data-urlencode "top_k=3"
+```
+
+*Note: The `data/chroma_db/` directory is generated locally when the vector database is created. It is excluded from Git and should be regenerated by running `python -m app.vectorstore` after generating the chunks and embeddings.*
 
 ---
 
@@ -633,6 +883,10 @@ Git is used to maintain development history and GitHub is used for repository ho
 ### Day 6 Git Commit
 
 `Complete Day 6 Groq LLM integration and prompt evaluation`
+
+### Day 7 Git Commit
+
+`Complete Day 7 semantic search and ChromaDB integration`
 
 ### Useful Git Commands
 
@@ -660,7 +914,9 @@ The following improvements are planned for subsequent development stages:
 - Implement robust handling of questions that cannot be answered from available data.
 - Improve LLM response quality and factual reliability.
 - Review and improve prompt evaluation.
-- Explore advanced Retrieval-Augmented Generation (RAG).
+- Connect ChromaDB semantic retrieval with the Groq LLM to develop a complete RAG workflow.
+- Improve document retrieval relevance and ranking.
+- Expand document coverage for schemes beyond farm mechanization.
 - Introduce multilingual support for Marathi, Hindi, and English.
 - Develop a farmer-friendly web interface.
 - Integrate a persistent database.
@@ -697,14 +953,18 @@ AI-generated responses may contain errors or incomplete information. Users shoul
 | Domain | Agriculture and Artificial Intelligence |
 | Language | Python |
 | Backend | FastAPI |
-| Search Technique | TF-IDF and Cosine Similarity |
+| Search Techniques | TF-IDF, Cosine Similarity, Semantic Search |
 | LLM Provider | Groq |
 | LLM Integration | Groq Python SDK |
+| Embedding Model | all-MiniLM-L6-v2 |
+| Vector Database | ChromaDB |
 | Prompt Engineering | System and Task Prompts |
 | Dataset | 19 scheme records |
-| API Endpoints | 6 |
-| Development Progress | Day 1–Day 6 |
-| Latest Checkpoint | Day 6 Groq LLM Integration |
+| Document Chunks | 136 |
+| Embedding Dimensions | 384 |
+| API Endpoints | 7 |
+| Development Progress | Day 1–Day 7 |
+| Latest Checkpoint | Day 7 Semantic Search and ChromaDB Integration |
 | Repository | Adityahon3344/Gen-AI-Examate |
 
 ---
