@@ -1,3 +1,4 @@
+
 # Python cache
 __pycache__/
 *.py[cod]
@@ -8,6 +9,11 @@ env/
 
 # Environment variables
 .env
+.env.*
+!.env.example
+
+# ChromaDB generated database
+data/chroma_db/
 
 # macOS
 .DS_Store

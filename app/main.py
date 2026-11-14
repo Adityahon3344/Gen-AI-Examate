@@ -3,6 +3,9 @@ import json
 from pathlib import Path
 from dataclasses import asdict
 
+import chromadb
+from sentence_transformers import SentenceTransformer
+
 from fastapi import FastAPI, HTTPException, Query
 from pydantic import BaseModel, Field
 
@@ -15,13 +18,31 @@ from app.llm import generate_response
 app = FastAPI(
     title="KrishiYojana API",
     description="Maharashtra Farmer Scheme Eligibility and Benefits Assistant",
-    version="1.1.0"
+    version="1.2.0"
 )
 
 
-# Prompt directory
+# Project directories
 BASE_DIR = Path(__file__).resolve().parent.parent
 PROMPTS_DIR = BASE_DIR / "prompts"
+
+# ChromaDB configuration
+DB_PATH = BASE_DIR / "data" / "chroma_db"
+COLLECTION_NAME = "krishiyojana_documents"
+
+chroma_client = chromadb.PersistentClient(path=str(DB_PATH))
+
+try:
+    vector_collection = chroma_client.get_collection(
+        name=COLLECTION_NAME
+    )
+except Exception:
+    vector_collection = None
+
+# Load embedding model
+embedding_model = SentenceTransformer(
+    "sentence-transformers/all-MiniLM-L6-v2"
+)
 
 
 # 1. Health Check API
@@ -114,7 +135,77 @@ def ask_question(request: QuestionRequest):
     }
 
 
-# 7. Load Prompt Files
+# 7. Semantic Search API using ChromaDB
+@app.get("/search/semantic")
+def semantic_search(
+    q: str = Query(..., min_length=1),
+    top_k: int = Query(default=3, ge=1, le=10)
+):
+    """Search document chunks using semantic similarity."""
+
+    if vector_collection is None:
+        raise HTTPException(
+            status_code=503,
+            detail="ChromaDB collection is not available. Run app.vectorstore first."
+        )
+
+    try:
+        # Generate query embedding
+        query_embedding = embedding_model.encode(
+            [q.strip()],
+            normalize_embeddings=True
+        )
+
+        # Search ChromaDB
+        results = vector_collection.query(
+            query_embeddings=query_embedding.tolist(),
+            n_results=min(top_k, vector_collection.count()),
+            include=[
+                "documents",
+                "metadatas",
+                "distances"
+            ]
+        )
+
+        matches = []
+
+        for index in range(len(results["ids"][0])):
+            metadata = results["metadatas"][0][index]
+            distance = results["distances"][0][index]
+
+            matches.append({
+                "id": results["ids"][0][index],
+                "text": results["documents"][0][index],
+                "source": metadata["source"],
+                "page": (
+                    metadata["page"]
+                    if metadata["page"] != -1
+                    else None
+                ),
+                "title": metadata["title"],
+                "similarity_score": round(
+                    max(0.0, min(1.0, 1.0 - distance)),
+                    4
+                )
+            })
+
+        return {
+            "query": q,
+            "total_results": len(matches),
+            "results": matches
+        }
+
+    except HTTPException:
+        raise
+
+    except Exception as error:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Semantic search failed: {str(error)}"
+        )
+
+
+# 8. Load Prompt Files
 def load_prompt(filename):
     """Read a prompt file from the prompts directory."""
     prompt_path = PROMPTS_DIR / filename
@@ -128,7 +219,7 @@ def load_prompt(filename):
         )
 
 
-# 8. Chat API using Groq LLM
+# 9. Chat API using Groq LLM
 @app.post("/chat")
 def chat_with_farmer(request: QuestionRequest):
     """Generate an AI answer using Groq and scheme records."""
@@ -205,7 +296,10 @@ Rules:
             or isinstance(confidence, bool)
             or not isinstance(confidence, (int, float))
             or not 0 <= confidence <= 1
-            or not (follow_up is None or isinstance(follow_up, str))
+            or not (
+                follow_up is None
+                or isinstance(follow_up, str)
+            )
         ):
             raise ValueError("Invalid JSON response structure")
 
