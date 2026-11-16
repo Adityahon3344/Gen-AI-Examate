@@ -1,111 +1,100 @@
-# KrishiYojana
 
-### Maharashtra Farmer Scheme Eligibility & Benefits Assistant
+# KrishiYojana – AI-Powered Farmer Scheme Assistant
 
-**Project Repository:** [Adityahon3344/Gen-AI-Examate](https://github.com/Adityahon3344/Gen-AI-Examate)
-
-**Project Category:** Artificial Intelligence / Machine Learning / Backend Development
-
-**Primary Language:** Python
-
-**Development Status:** Day 1–Day 7 Completed
+**An AI-powered agricultural government scheme information and assistance system using Generative AI and Retrieval-Augmented Generation (RAG).**
 
 ---
 
-## 1. Project Overview
+# 1. Project Overview
 
-KrishiYojana is an AI-oriented agricultural assistance application designed to help farmers discover government agricultural schemes available in Maharashtra.
+KrishiYojana is an AI-powered application designed to help farmers access information about agricultural government schemes, eligibility criteria, benefits, and required documents.
 
-The project aims to organize agricultural scheme information into structured records and provide an accessible interface for retrieving scheme details, understanding benefits, exploring eligibility criteria, and identifying required documents.
+The project uses Python, FastAPI, Large Language Models (LLMs), semantic search, embeddings, and Retrieval-Augmented Generation (RAG) to provide information based on agricultural documents.
 
-The current implementation includes:
+The application retrieves relevant information from its knowledge base and uses an LLM to generate contextual answers. It also provides source references to help users identify the documents used to generate responses.
 
-- Structured agricultural scheme dataset.
-- Command-line interface.
-- Data collection and extraction utilities.
-- FastAPI backend.
-- TF-IDF-based intelligent search.
-- Groq-powered LLM response generation.
-- Prompt engineering and evaluation.
-- PDF and HTML document processing.
-- Document chunking with overlapping text segments.
-- Sentence Transformer-based text embeddings.
-- Semantic search using vector similarity.
-- Persistent vector storage using ChromaDB.
-- FastAPI semantic search endpoint.
+The system is instructed to avoid generating unsupported information when the available documents do not contain sufficient evidence.
 
-The project is being developed incrementally, focusing on Python fundamentals, data processing, API development, information retrieval, embeddings, vector databases, and Large Language Model integration.
+**Project Name:** KrishiYojana
 
-## 2. Project Objectives
+**Project Category:** Generative AI / Retrieval-Augmented Generation
 
-- Collect and organize Maharashtra agricultural scheme information.
-- Develop a structured dataset containing scheme details.
-- Implement scheme retrieval and keyword-based searching.
-- Provide RESTful APIs using FastAPI.
-- Implement intelligent search using TF-IDF and cosine similarity.
-- Analyze structured data using Pandas.
-- Understand Large Language Model (LLM) architecture and working principles.
-- Integrate an LLM using the Groq API.
-- Develop prompt templates for farmer assistance.
-- Evaluate different prompt versions.
-- Process PDF and HTML documents.
-- Implement document chunking and text preprocessing.
-- Generate semantic embeddings using Sentence Transformers.
-- Store document embeddings in ChromaDB.
-- Implement semantic search for farmer questions.
-- Prepare the foundation for an AI-powered farmer assistance system.
+**Development Progress:** Day 1 to Day 8
 
-## 3. Technology Stack
+**Primary Objective:** Develop an AI-powered assistant for agricultural scheme information.
 
-| Category | Technologies |
+---
+
+# 2. Project Objectives
+
+The main objectives of this project are:
+
+1. Collect agricultural government scheme information and related documents.
+2. Create a structured dataset containing scheme information.
+3. Extract and preprocess information from PDF and HTML documents.
+4. Develop a FastAPI-based backend application.
+5. Implement traditional text search using TF-IDF.
+6. Generate text embeddings using Sentence Transformers.
+7. Store and retrieve document embeddings using ChromaDB.
+8. Integrate Groq LLM for AI-powered response generation.
+9. Develop a Retrieval-Augmented Generation pipeline.
+10. Generate answers using retrieved document context.
+11. Provide source-based citations in responses.
+12. Evaluate retrieval configurations and generated responses.
+13. Improve the reliability of answers by handling unsupported questions.
+
+---
+
+# 3. Technology Stack
+
+| Category | Technology |
 |---|---|
 | Programming Language | Python |
 | Backend Framework | FastAPI |
-| API Server | Uvicorn |
-| Data Processing | Pandas |
-| Machine Learning | Scikit-learn |
-| Text Processing | TF-IDF, Cosine Similarity |
-| Data Collection | Requests, BeautifulSoup |
-| PDF Processing | PyPDF |
-| Data Validation | Pydantic |
-| Data Storage | Python Dictionaries, JSON |
 | LLM Provider | Groq |
-| LLM Integration | Groq Python SDK |
-| Prompt Engineering | System Prompts, Task Prompts |
-| Environment Variables | python-dotenv |
-| Embedding Model | Sentence Transformers |
-| Embedding Model Name | all-MiniLM-L6-v2 |
+| Embedding Model | all-MiniLM-L6-v2 |
 | Vector Database | ChromaDB |
-| Semantic Search | Vector Similarity Search |
-| Document Chunking | Text Chunking with Overlap |
-| Evaluation | Prompt Comparison and Semantic Search Evaluation |
-| Version Control | Git |
-| Repository Hosting | GitHub |
-| Development Environment | Visual Studio Code |
+| Traditional Search | TF-IDF |
+| Semantic Search | Sentence Transformers |
+| Data Processing | Pandas, NumPy |
+| Document Processing | PDF and HTML extraction |
+| API Testing | Swagger UI |
+| Version Control | Git and GitHub |
+| Development Environment | VS Code |
 
-## 4. Repository Structure
+## 3.1 AI and RAG Components
+
+**Large Language Model (LLM):** Used to generate natural-language responses based on retrieved context.
+
+**Embeddings:** Convert text documents and user questions into numerical vector representations.
+
+**ChromaDB:** Stores document embeddings and supports similarity-based retrieval.
+
+**Semantic Search:** Retrieves relevant document chunks based on the meaning of a query.
+
+**Retrieval-Augmented Generation:** Combines document retrieval with LLM-based response generation.
+
+---
+
+# 4. Repository Structure
+
+The project is organized into different directories to maintain separation between application code, datasets, documents, prompts, and evaluation resources.
 
 ```text
 Gen-AI-Examate/
-│
-├── analysis/
-│   ├── __init__.py
-│   └── explore.py
 │
 ├── app/
 │   ├── __init__.py
 │   ├── main.py
 │   ├── records.py
-│   ├── cli.py
-│   ├── models.py
 │   ├── fetch.py
 │   ├── ingest.py
 │   ├── smart_search.py
-│   ├── llm.py
 │   ├── chunking.py
 │   ├── embed.py
 │   ├── semantic_search.py
-│   └── vectorstore.py
+│   ├── vectorstore.py
+│   └── rag.py
 │
 ├── data/
 │   ├── raw/
@@ -114,859 +103,955 @@ Gen-AI-Examate/
 │   │   ├── DBT_Farmer_User_Manual.pdf
 │   │   └── extracted_text.txt
 │   │
+│   ├── chroma_db/
 │   ├── records.json
-│   ├── chunks.json
-│   ├── sample_records.py
-│   └── chroma_db/           # Generated locally; ignored by Git
+│   └── sample_records.py
 │
 ├── docs/
 │   ├── how_llms_work.md
-│   └── user_questions.md
+│   ├── user_questions.md
+│   └── DAILY_PROGRESS.md
 │
 ├── prompts/
 │   ├── system_prompt.txt
 │   ├── task_prompt_1.txt
-│   ├── task_prompt_2.txt
-│   ├── eval_prompt_v1.txt
-│   └── eval_prompt_v2.txt
+│   └── task_prompt_2.txt
 │
 ├── eval/
-│   ├── run_prompt_eval.py
+│   ├── eval_set.json
+│   ├── run_eval.py
 │   ├── prompt_compare.md
-│   ├── results.json
-│   └── search_results.md
+│   ├── search_results.md
+│   └── results/
+│       ├── rag_eval_results.json
+│       └── comparison.md
 │
 ├── day01_intro.py
 ├── day01_menu.py
-├── sync_records.py
 ├── requirements.txt
-├── .env.example
 ├── .gitignore
+├── .env
 └── README.md
 ```
 
-## 5. Dataset Development
+## 4.1 Directory Description
 
-The project currently maintains 19 agricultural scheme records in `data/sample_records.py`.
-
-### Dataset Fields
-
-| Field | Description |
+| Directory / File | Purpose |
 |---|---|
-| ID | Unique scheme identifier |
-| Scheme Name | Name of the agricultural scheme |
-| Department | Implementing department |
-| Benefit | Scheme benefit description |
-| Eligibility | Eligibility conditions |
-| Required Documents | Required application documents |
-| Source URL | Reference source for scheme information |
+| `app/` | Contains backend application code and AI/RAG modules. |
+| `data/` | Contains structured scheme records and document data. |
+| `data/raw/` | Stores original agricultural PDF and HTML documents. |
+| `data/chroma_db/` | Stores the persistent ChromaDB vector database. |
+| `docs/` | Contains project documentation and daily progress reports. |
+| `prompts/` | Contains system and task-specific LLM prompts. |
+| `eval/` | Contains evaluation datasets, scripts, and reports. |
+| `requirements.txt` | Contains Python project dependencies. |
+| `.gitignore` | Specifies files and directories excluded from Git tracking. |
+| `.env` | Stores environment variables and API configuration. |
+| `README.md` | Main project documentation. |
 
-### Scheme Records
-
-| ID | Scheme Name |
-|---:|---|
-| 1 | Sub-mission on Farm Mechanization |
-| 2 | State Agriculture Mechanization Scheme |
-| 3 | Birsa Munda Krishi Kranti Yojana |
-| 4 | PMRKVY - Rainfed Area Development (RAD) |
-| 5 | Dr. Babasaheb Ambedkar Krushi Swavalamban Yojana |
-| 6 | Pradhan Mantri Krishi Sinchayee Yojana - Per Drop More Crop |
-| 7 | National Food Security Mission (NFSM) - Food Grains |
-| 8 | Mission for Integrated Development of Horticulture (MIDH) |
-| 9 | Bhausaheb Fundkar Phalbaag Lagvad Yojana |
-| 10 | Rashtriya Krushi Vikas Yojana (RKVY) - RAFTAAR |
-| 11 | Chief Minister Sustainable Agriculture Irrigation Scheme |
-| 12 | Chief Minister Sustainable Agriculture Irrigation Scheme - Individual Farm Pond |
-| 13 | Dr. Shyamaprasad Mukherjee Jan-Van Vikas Scheme |
-| 14 | Gopinath Munde Shetkari Apghat Suraksha Sanugrah Anudan Yojana |
-| 15 | Chief Minister Agro and Food Processing Scheme |
-| 16 | Kaju Kalma Vatap Scheme |
-| 17 | RKVY - Sugarcane Harvester Subsidy |
-| 18 | NFSM - Oilseed and Oil Palm |
-| 19 | NFSM - Cotton and Sugarcane |
-
-**Dataset Summary**
-
-- Total records: 19
-- Unique IDs: 19
-- Record ID range: 1–19
-- Primary dataset: `data/sample_records.py`
-- JSON dataset: `data/records.json`
-
-*Note: Scheme information is maintained for educational development. Eligibility, benefits, and application requirements require verification against current official government guidelines.*
+**Note:** This is the documented project structure based on the implemented modules. Verify the actual files in the repository before submission. The `.env` file and ChromaDB data should not be committed to GitHub.
 
 ---
 
-## 6. Day-wise Development Progress
+# 5. Project Development Progress – Day 1 to Day 8
 
-### Day 1 – Python Programming Fundamentals
+This section documents the development activities, implementation details, files created, testing performed, and deliverables for each development day.
 
-**Objective:** Establish the project foundation and practice core Python programming concepts.
+---
 
-**Implementation:**
+## Day 1 – Python Fundamentals
 
-- Created the initial KrishiYojana project introduction.
-- Implemented user input and output operations.
-- Practiced variables and formatted strings.
-- Developed an interactive command-line menu.
-- Implemented conditional statements and loops.
+**Objective:** Understand Python fundamentals and develop basic programming skills required for the project.
 
-**Deliverables:**
+### Activities Completed
+
+1. Studied Python variables and data types.
+2. Practised conditional statements.
+3. Implemented loops and functions.
+4. Practised user input and output.
+5. Created basic Python programs.
+6. Understood fundamental programming concepts.
+
+### Files Created
 
 - `day01_intro.py`
 - `day01_menu.py`
 
-**Learning Outcomes:** Python fundamentals, variables, input/output, conditional statements, and loop-based program execution.
+### Implementation Details
 
-### Day 2 – Structured Dataset and CLI Development
+- Practised basic Python syntax.
+- Implemented simple programming logic.
+- Created programs using variables, conditions, and functions.
 
-**Objective:** Build a structured agricultural scheme dataset and implement retrieval operations.
+### Testing and Verification
 
-**Implementation:**
+- Executed Python programs.
+- Checked program outputs.
+- Verified basic programming logic.
 
-- Created structured scheme records using Python lists and dictionaries.
-- Expanded the dataset to 19 records.
-- Implemented scheme searching.
-- Implemented department-wise scheme counting.
-- Implemented scheme retrieval using unique IDs.
-- Developed a command-line interface for interacting with the dataset.
+### Deliverables
 
-**Deliverables:**
+- Python practice programs.
+- Understanding of Python fundamentals.
+
+**Status:** Completed
+
+---
+
+## Day 2 – Dataset Preparation and Structuring
+
+**Objective:** Prepare a structured dataset containing agricultural government scheme information.
+
+### Activities Completed
+
+1. Identified relevant agricultural government schemes.
+2. Collected available scheme information.
+3. Created structured scheme records.
+4. Organized scheme information using Python data structures.
+5. Prepared JSON data for application use.
+6. Included available scheme details such as benefits and eligibility information.
+
+### Files Created
 
 - `data/sample_records.py`
 - `app/records.py`
-- `app/cli.py`
+- `data/records.json`
 
-**Learning Outcomes:** Python data structures, modular programming, record retrieval, and basic search operations.
+### Implementation Details
 
-### Day 3 – Data Collection and Extraction
+- Prepared 19 scheme records.
+- Organized scheme information into structured records.
+- Separated data preparation from application logic.
+- Prepared the dataset for search and retrieval operations.
 
-**Objective:** Develop the initial data collection and document extraction pipeline.
+### Testing and Verification
 
-**Implementation:**
+- Loaded scheme records.
+- Checked the dataset structure.
+- Verified that records could be accessed by the application.
 
-- Collected agricultural scheme-related HTML and PDF resources.
-- Implemented resource downloading using Requests.
-- Extracted HTML content using BeautifulSoup.
-- Extracted PDF text using PyPDF.
-- Stored extracted content for further processing.
-- Introduced dataclass-based data modeling.
+### Deliverables
 
-**Deliverables:**
+- Structured agricultural scheme dataset.
+- JSON-based scheme records.
+- Initial data management module.
+
+**Status:** Completed
+
+---
+
+## Day 3 – Document Collection and Data Ingestion
+
+**Objective:** Collect agricultural scheme documents and extract their content for the application knowledge base.
+
+### Activities Completed
+
+1. Identified relevant agricultural documents.
+2. Collected PDF and HTML resources.
+3. Implemented document fetching functionality.
+4. Extracted text from collected documents.
+5. Prepared extracted content for further processing.
+6. Organized source documents inside the project.
+
+### Files Created
 
 - `app/fetch.py`
 - `app/ingest.py`
-- `app/models.py`
-- `data/raw/`
+- `data/raw/farm_mechanization.html`
+- `data/raw/Scheme-SubMissionOnFarmMechanization.pdf`
+- `data/raw/DBT_Farmer_User_Manual.pdf`
+- `data/raw/extracted_text.txt`
 
-**Learning Outcomes:** Web resource retrieval, HTML parsing, PDF processing, and structured data modeling.
+### Implementation Details
 
-### Day 4 – FastAPI Backend and Intelligent Search
+- Developed document fetching and ingestion modules.
+- Collected agricultural information from available documents.
+- Extracted document text for subsequent processing.
+- Organized raw documents separately from application code.
 
-**Objective:** Develop REST APIs and introduce machine-learning-based search functionality.
+### Testing and Verification
 
-**Implementation:**
+- Executed the document ingestion process.
+- Checked extracted text output.
+- Verified that document content was available for processing.
 
-- Created the FastAPI application.
-- Implemented REST API endpoints.
-- Integrated JSON-based record loading.
-- Implemented TF-IDF vectorization.
-- Applied cosine similarity for search result ranking.
-- Developed an API for farmer questions.
-- Performed dataset exploration using Pandas.
-- Tested API functionality through Swagger UI.
+### Deliverables
 
-**Deliverables:**
+- Agricultural document collection.
+- Document fetching module.
+- Document ingestion module.
+- Extracted text dataset.
 
-- `app/main.py`
+**Status:** Completed
+
+---
+
+## Day 4 – Backend Development and Traditional Search
+
+**Objective:** Set up the Python development environment and implement the initial backend and search functionality.
+
+### Activities Completed
+
+1. Created a Python virtual environment.
+2. Installed required dependencies.
+3. Configured the project environment.
+4. Developed the FastAPI backend.
+5. Implemented TF-IDF-based text search.
+6. Connected structured scheme records with search functionality.
+7. Used Pandas for dataset exploration.
+8. Created initial API endpoints.
+
+### Files Created or Modified
+
 - `app/smart_search.py`
-- `analysis/explore.py`
+- FastAPI application files.
+- `requirements.txt`
 
-**Learning Outcomes:** REST API development, request handling, JSON processing, TF-IDF, cosine similarity, and exploratory data analysis.
+### Implementation Details
 
-### Day 5 – LLM Fundamentals and API Verification
+**FastAPI Backend:**
 
-**Objective:** Understand the fundamentals of Large Language Models and verify the FastAPI application.
+Developed the initial API application to expose project functionality through HTTP endpoints.
 
-**Implementation:**
+**TF-IDF Search:**
 
-- Created technical documentation explaining LLM architecture and working principles.
-- Documented tokenization, embeddings, transformers, attention mechanisms, and next-token prediction.
-- Added a Mermaid flowchart illustrating the LLM processing pipeline.
-- Prepared 10 realistic farmer questions.
-- Designed Q6 to test a question that cannot be answered using the current dataset.
-- Executed the FastAPI application using Uvicorn.
-- Accessed and inspected Swagger UI documentation.
-- Explained the health-check API function.
-- Executed the `/health` endpoint and verified its HTTP 200 response.
-- Created and pushed the `checkpoint-1` Git tag.
+Implemented traditional text search using Term Frequency–Inverse Document Frequency (TF-IDF).
 
-**Deliverables:**
+**Dataset Exploration:**
+
+Used Pandas to explore and inspect structured scheme information.
+
+### Testing and Verification
+
+- Started the FastAPI server.
+- Tested available API endpoints.
+- Verified search responses.
+- Checked dataset loading and accessibility.
+
+### Deliverables
+
+- Initial FastAPI backend.
+- TF-IDF-based search implementation.
+- Python dependency configuration.
+- Initial API functionality.
+
+**Status:** Completed
+
+---
+
+## Day 5 – LLM Fundamentals and Question Preparation
+
+**Objective:** Understand Large Language Models and prepare farmer-related questions for the AI assistant.
+
+### Activities Completed
+
+1. Studied Large Language Model fundamentals.
+2. Understood the basic LLM input and output workflow.
+3. Studied how LLMs generate natural-language responses.
+4. Prepared farmer-related questions.
+5. Identified questions requiring document-based information.
+6. Prepared an intentionally unanswerable question about the current tractor subsidy application deadline.
+
+### Files Created
 
 - `docs/how_llms_work.md`
 - `docs/user_questions.md`
-- `app/main.py`
-- Git tag: `checkpoint-1`
 
-**Learning Outcomes:** LLM fundamentals, technical documentation, API testing, HTTP response validation, and Git checkpoint management.
+### Implementation Details
 
-### Day 6 – Groq LLM Integration and Prompt Engineering
+Prepared 10 farmer-related questions covering agricultural scheme information.
 
-**Objective:** Integrate a Large Language Model into the existing FastAPI application and implement prompt evaluation.
+The questions were designed to represent common information requirements from farmers.
 
-**Implementation:**
+One question was intentionally designed to test whether the assistant would avoid inventing a current application deadline when verified information was unavailable in the knowledge base.
 
-- Selected Groq as the LLM provider.
-- Installed the Groq Python SDK.
-- Installed python-dotenv for environment variable management.
-- Configured the Groq API key using a local `.env` file.
-- Created `.env.example` with a placeholder API key.
-- Added `.env` to `.gitignore` to prevent accidental API key uploads.
-- Created `app/llm.py` for Groq client initialization and LLM response generation.
-- Integrated the LLM with the existing scheme retrieval workflow.
-- Added the `POST /chat` API endpoint.
-- Connected retrieved scheme information with the task prompt.
-- Created system and task prompt templates.
-- Prepared two prompt versions for comparison.
-- Created an evaluation script to test both prompt versions.
-- Generated 20 evaluation responses using 10 farmer questions for each prompt version.
-- Saved evaluation outputs in JSON format.
-- Documented preliminary prompt comparison observations.
-- Created `sync_records.py` to synchronize scheme records into `data/records.json`.
-- Verified that the JSON dataset contains 19 records.
-- Committed and pushed the Day 6 implementation to GitHub.
+### Testing and Verification
 
-**Deliverables:**
+- Reviewed the prepared questions.
+- Checked whether the questions covered relevant agricultural topics.
+- Identified questions requiring additional source information.
+- Prepared test scenarios for the AI assistant.
 
-- `app/llm.py`
-- `app/main.py`
+### Deliverables
+
+- LLM fundamentals documentation.
+- Farmer-related question dataset.
+- Initial question-answering test scenarios.
+
+**Status:** Completed
+
+---
+
+## Day 6 – Groq Integration and Prompt Engineering
+
+**Objective:** Integrate a Large Language Model into the application and implement prompt-based question answering.
+
+### Activities Completed
+
+1. Integrated the Groq API.
+2. Configured API access using environment variables.
+3. Created system-level instructions.
+4. Developed task-specific prompts.
+5. Implemented the `/chat` endpoint.
+6. Generated responses using retrieved scheme records.
+7. Compared two prompt versions.
+8. Reviewed generated responses.
+
+### Files Created or Modified
+
 - `prompts/system_prompt.txt`
 - `prompts/task_prompt_1.txt`
 - `prompts/task_prompt_2.txt`
-- `prompts/eval_prompt_v1.txt`
-- `prompts/eval_prompt_v2.txt`
-- `eval/run_prompt_eval.py`
 - `eval/prompt_compare.md`
-- `eval/results.json`
-- `sync_records.py`
-- `.env.example`
+- `app/main.py`
+- LLM integration module.
 
-**Learning Outcomes:** Groq API integration, environment variable management, prompt engineering, LLM response generation, prompt evaluation, and secure API key handling.
+### Implementation Details
 
-**Evaluation Summary:**
+**Groq Integration:**
 
-| Metric | Result |
-|---|---:|
-| Total Evaluation Questions | 10 |
-| Prompt Version 1 Responses | 10 |
-| Prompt Version 2 Responses | 10 |
-| Total Generated Responses | 20 |
-| Evaluation Output | `eval/results.json` |
+Connected the backend application to Groq for LLM-based response generation.
 
-*Note: Prompt comparison is preliminary. Generated responses require manual review and verification against official scheme information before drawing conclusions about accuracy.*
+**Prompt Engineering:**
 
-### Day 7 – Document Chunking, Embeddings and Semantic Search
+Created system and task-specific prompts to guide the model's responses.
 
-**Objective:** Develop a document processing and semantic retrieval pipeline using text chunking, embeddings, and ChromaDB to improve information retrieval in the KrishiYojana application.
+**Chat API:**
 
-**Implementation:**
+Implemented the `/chat` endpoint to receive user questions and generate responses using retrieved scheme records.
 
-- Created `app/chunking.py` to process agricultural scheme-related PDF and HTML documents.
-- Extracted PDF text page by page using PyPDF.
-- Extracted HTML content using BeautifulSoup.
-- Implemented text chunking with a chunk size of 1000 words and an overlap of 150 words.
-- Preserved document metadata, including source filename, page number, and document title.
-- Generated 136 document chunks from the available raw documents.
-- Created `app/embed.py` to generate text embeddings using Sentence Transformers.
-- Integrated the `all-MiniLM-L6-v2` embedding model.
-- Generated 384-dimensional embeddings for all 136 chunks.
-- Stored the generated embeddings in `data/chunks.json`.
-- Created `app/semantic_search.py` to perform semantic searches using the 10 predefined farmer questions.
-- Retrieved the top 3 matching document chunks for each question.
-- Recorded search results, similarity scores, source filenames, page numbers, and matched text in `eval/search_results.md`.
-- Installed and integrated ChromaDB as a persistent vector database.
-- Created `app/vectorstore.py` to store document embeddings and metadata in a ChromaDB collection.
-- Indexed all 136 document chunks in the persistent collection `krishiyojana_documents`.
-- Integrated semantic search into the FastAPI application.
-- Added the `GET /search/semantic` endpoint.
-- Tested semantic search through the API using farmer-related questions.
-- Updated `.gitignore` to exclude generated ChromaDB database files and private environment files.
+**Response Structure:**
 
-**Deliverables:**
+The chat endpoint returns structured information containing:
+
+- Answer
+- Confidence
+- Follow-up information
+
+### Testing and Verification
+
+- Tested Groq API connectivity.
+- Tested the `/chat` endpoint.
+- Compared outputs from two prompt versions.
+- Reviewed generated answers.
+- Checked the API response structure.
+
+### Deliverables
+
+- Groq LLM integration.
+- System and task prompts.
+- AI-powered chat endpoint.
+- Prompt comparison documentation.
+
+**Status:** Completed
+
+---
+
+## Day 7 – Document Chunking, Embeddings and Vector Database
+
+**Objective:** Implement semantic search by converting agricultural documents into embeddings and storing them in ChromaDB.
+
+### Activities Completed
+
+1. Implemented document chunking.
+2. Divided document content into manageable text sections.
+3. Added source, page, and title metadata.
+4. Generated embeddings using Sentence Transformers.
+5. Implemented semantic similarity search.
+6. Integrated ChromaDB.
+7. Stored document embeddings in a persistent vector database.
+8. Implemented the `/search/semantic` endpoint.
+9. Reviewed semantic search results.
+
+### Files Created
 
 - `app/chunking.py`
 - `app/embed.py`
 - `app/semantic_search.py`
 - `app/vectorstore.py`
-- `app/main.py`
-- `data/chunks.json`
 - `eval/search_results.md`
-- `requirements.txt`
-- `.gitignore`
 
-**Learning Outcomes:** Document processing, text extraction, overlapping chunking, semantic embeddings, Sentence Transformers, vector databases, ChromaDB, cosine distance, semantic search, and FastAPI integration.
+### Implementation Details
 
-**Day 7 Implementation Summary:**
+**Document Chunking:**
 
-| Metric | Result |
-|---|---:|
-| Total Raw Documents Processed | PDF and HTML documents |
-| Total Generated Chunks | 136 |
-| Chunk Size | 1000 words |
-| Chunk Overlap | 150 words |
-| Embedding Model | all-MiniLM-L6-v2 |
-| Embedding Dimensions | 384 |
-| Total Embedded Chunks | 136 |
-| Vector Database | ChromaDB |
-| Collection Name | `krishiyojana_documents` |
-| Total Indexed Chunks | 136 |
-| Test Questions | 10 |
-| Results per Question | Top 3 |
-| Semantic Search Endpoint | `GET /search/semantic` |
+Divided extracted document content into smaller text chunks for efficient retrieval.
 
-**Semantic Search Testing:**
+**Chunk Configuration:**
 
-- Tested semantic search with 10 predefined farmer questions.
-- Retrieved the top 3 matching document chunks for each question.
-- Recorded similarity scores and source metadata.
-- Verified the semantic search API using a tractor and agricultural machinery-related question.
-- Confirmed that the API returns matching text, source filename, page number, document title, and similarity score.
+- Chunk size: 1000 words.
+- Chunk overlap: 150 words.
 
-*Note: Semantic similarity scores are ranking indicators, not probabilities of factual correctness. Some questions may retrieve irrelevant or incomplete chunks because the current source documents do not cover all scheme topics equally. Current application deadlines and scheme eligibility must be verified using official government sources.*
+**Embedding Generation:**
 
----
-
-## 7. FastAPI Implementation
-
-The application currently exposes seven API endpoints.
-
-| Method | Endpoint | Functionality |
-|---|---|---|
-| GET | `/health` | Verify API availability |
-| GET | `/records` | Retrieve scheme records |
-| GET | `/records/{record_id}` | Retrieve a specific scheme |
-| GET | `/search` | Perform TF-IDF-based scheme search |
-| POST | `/questions` | Retrieve schemes relevant to a farmer's question |
-| POST | `/chat` | Generate an LLM-based response using retrieved scheme context |
-| GET | `/search/semantic` | Perform semantic search using ChromaDB |
-
-### Health Check API
-
-**Endpoint:** `GET /health`
-
-```python
-@app.get("/health")
-def health_check():
-    return {
-        "status": "success",
-        "message": "KrishiYojana API is running!"
-    }
-```
-
-**Verified Response:**
-
-```json
-{
-    "status": "success",
-    "message": "KrishiYojana API is running!"
-}
-```
-
-**HTTP Status:** `200 OK`
-
-### Chat API
-
-**Endpoint:** `POST /chat`
-
-The chat endpoint accepts a farmer's question, retrieves relevant scheme information, and uses the Groq LLM to generate a natural-language response based on the available context.
-
-**Processing Workflow:**
-
-1. Receive the farmer's question.
-2. Search the available agricultural scheme records.
-3. Retrieve relevant scheme information.
-4. Prepare the task prompt with the retrieved context.
-5. Send the prompt to the Groq LLM.
-6. Generate the response.
-7. Return the answer, confidence field, and follow-up information through the API.
-
-**Response Fields:**
-
-| Field | Description |
-|---|---|
-| answer | Generated response to the farmer's question |
-| confidence | Application-provided confidence indicator |
-| follow_up | Suggested follow-up information or question |
-
-*Note: The confidence field is not a calibrated probability of factual correctness.*
-
-### Semantic Search API
-
-**Endpoint:** `GET /search/semantic`
-
-The semantic search endpoint accepts a farmer's question, generates its embedding using Sentence Transformers, and searches the persistent ChromaDB collection for relevant document chunks.
-
-**Example Request:**
-
-```bash
-curl -G "http://127.0.0.1:8000/search/semantic" \
-  --data-urlencode "q=Which government schemes provide financial assistance for purchasing agricultural machinery and tractors?" \
-  --data-urlencode "top_k=3"
-```
-
-**Query Parameters:**
-
-| Parameter | Description | Default |
-|---|---|---|
-| q | Farmer's search question | Required |
-| top_k | Number of matching chunks | 3 |
-
-**Response Fields:**
-
-| Field | Description |
-|---|---|
-| query | Original search question |
-| total_results | Number of returned results |
-| results | List of matching document chunks |
-| id | Unique chunk identifier |
-| text | Retrieved document text |
-| source | Original document filename |
-| page | Source PDF page number, when available |
-| title | Document title |
-| similarity_score | Similarity ranking score |
-
-### API Documentation
-
-Interactive API documentation is available through FastAPI Swagger UI.
-
-```text
-http://127.0.0.1:8000/docs
-```
-
----
-
-## 8. Intelligent Search and LLM Approach
-
-The current application combines structured information retrieval, semantic search, and LLM-based response generation.
-
-### TF-IDF Information Retrieval Workflow
-
-The original search implementation uses TF-IDF and cosine similarity.
-
-1. Receive a search query or farmer question.
-2. Load the available scheme records.
-3. Convert scheme information into searchable text.
-4. Apply TF-IDF vectorization.
-5. Calculate cosine similarity between the query and scheme documents.
-6. Rank matching records by similarity.
-7. Return the top relevant results.
-
-### Semantic Search Workflow
-
-The Day 7 implementation introduces document-based semantic retrieval.
-
-1. Load the available PDF and HTML documents.
-2. Extract document text.
-3. Divide the extracted text into overlapping chunks.
-4. Preserve source, page number, and title metadata.
-5. Generate embeddings using Sentence Transformers.
-6. Store embeddings and document metadata in ChromaDB.
-7. Receive a farmer's search question.
-8. Generate an embedding for the question.
-9. Search the ChromaDB collection for similar document vectors.
-10. Retrieve the top matching document chunks.
-11. Return matching text, metadata, and similarity scores.
-
-### LLM Response Generation Workflow
-
-1. Receive a farmer's question through the chat API.
-2. Retrieve relevant scheme records using the existing search functionality.
-3. Prepare the retrieved information as context.
-4. Combine the context with the task prompt.
-5. Send the prompt to the Groq LLM.
-6. Generate a natural-language response.
-7. Return the response through the FastAPI endpoint.
-
-*Note: The current `/chat` implementation uses the structured scheme retrieval workflow. The ChromaDB semantic search endpoint is implemented separately and has not yet been connected to the `/chat` response-generation workflow.*
-
-### Overall Architecture – Existing Chat Workflow
-
-```text
-Farmer Question
-       |
-       v
-    FastAPI API
-       |
-       v
-   TF-IDF Search
-       |
-       v
-Relevant Scheme Records
-       |
-       v
-   Task Prompt
-       |
-       v
-     Groq LLM
-       |
-       v
- Generated Response
-       |
-       v
-    API Response
-```
-
-### Semantic Retrieval Architecture
-
-```text
-PDF and HTML Documents
-          |
-          v
-    Text Extraction
-          |
-          v
-    Text Chunking
-          |
-          v
- Sentence Transformer
-          |
-          v
-   Text Embeddings
-          |
-          v
-       ChromaDB
-          |
-          v
-    Farmer Question
-          |
-          v
-   Query Embedding
-          |
-          v
-  Semantic Similarity
-          |
-          v
- Relevant Document Chunks
-          |
-          v
-    Search Results
-```
-
-The semantic retrieval implementation provides a foundation for further Retrieval-Augmented Generation (RAG) development.
-
----
-
-## 9. LLM Fundamentals
-
-A Large Language Model is an AI model trained on large text datasets to process and generate natural-language content.
-
-The Day 5 documentation covers:
-
-- Tokenization
-- Embeddings
-- Transformer architecture
-- Attention mechanism
-- Next-token prediction
-- Response generation
-- LLM limitations
-
-**Technical Documentation:** `docs/how_llms_work.md`
-
-### Farmer Question Dataset
-
-Ten sample questions are documented in `docs/user_questions.md`.
-
-These questions cover agricultural machinery, irrigation, horticulture, scheme benefits, required documents, farm ponds, and farmer assistance.
-
-One question intentionally concerns current application deadlines, which are not available in the current dataset. This tests the system's ability to recognize missing information.
-
-### Prompt Engineering
-
-Prompt engineering is used to provide instructions and context to the LLM so that it can generate relevant responses.
-
-The project includes:
-
-- `system_prompt.txt` – General instructions for the assistant.
-- `task_prompt_1.txt` – Task instructions used by the current chat endpoint.
-- `task_prompt_2.txt` – An additional prompt for future eligibility assessment.
-- `eval_prompt_v1.txt` – First evaluation prompt version.
-- `eval_prompt_v2.txt` – Second evaluation prompt version.
-
-### Prompt Evaluation
-
-Two prompt versions are evaluated using the same set of 10 farmer questions.
-
-The evaluation script generates 20 responses and stores them in `eval/results.json`.
-
-The preliminary comparison is documented in `eval/prompt_compare.md`.
-
-### Document Embeddings
-
-Document embeddings convert text into numerical vectors that represent semantic information.
-
-The project uses the Sentence Transformers model:
+Used the Sentence Transformers model:
 
 `sentence-transformers/all-MiniLM-L6-v2`
 
-The generated embeddings have 384 dimensions and are used for semantic retrieval.
+Generated numerical vector representations of document chunks.
 
-### Vector Database
+**Vector Database:**
 
-ChromaDB is used as the persistent vector database.
+Integrated ChromaDB to store document embeddings and perform similarity-based retrieval.
 
-The project stores:
+**Semantic Search:**
 
-- Unique chunk IDs
-- Document text
-- Text embeddings
-- Source filenames
-- Page numbers
-- Document titles
+Implemented semantic search to retrieve relevant document sections based on the meaning of user queries.
 
-The ChromaDB collection is named:
+### Implementation Results
 
-`krishiyojana_documents`
+| Parameter | Result |
+|---|---|
+| Total Document Chunks | 136 |
+| Embedding Model | all-MiniLM-L6-v2 |
+| Embedding Dimensions | 384 |
+| Vector Database | ChromaDB |
+| Collection Name | krishiyojana_documents |
+| Chunk Size | 1000 words |
+| Chunk Overlap | 150 words |
+
+### Testing and Verification
+
+- Tested document chunking.
+- Verified embedding generation.
+- Checked embedding dimensions.
+- Verified vector storage.
+- Tested semantic search queries.
+- Reviewed retrieved search results.
+
+### Deliverables
+
+- Document chunking module.
+- Embedding generation module.
+- Semantic search implementation.
+- Persistent ChromaDB collection.
+- Semantic search evaluation documentation.
+
+**Status:** Completed
 
 ---
 
-## 10. Installation and Execution
+## Day 8 – RAG Pipeline, Ask API and Evaluation
 
-### Prerequisites
+**Objective:** Implement a complete Retrieval-Augmented Generation workflow and evaluate different retrieval configurations.
 
-- Python 3.11 or later
-- Git
-- Visual Studio Code
-- Groq API key
+### Activities Completed
 
-### Clone Repository
+1. Developed the RAG pipeline.
+2. Generated embeddings for user questions.
+3. Retrieved relevant document chunks from ChromaDB.
+4. Prepared retrieved document context for the LLM.
+5. Integrated Groq with the retrieval workflow.
+6. Implemented source-based citations.
+7. Added instructions for handling unsupported questions.
+8. Created the `POST /ask` API endpoint.
+9. Prepared a 15-question evaluation dataset.
+10. Implemented an evaluation script.
+11. Compared two retrieval configurations.
+12. Reviewed evaluation results.
+
+### Files Created or Modified
+
+- `app/rag.py`
+- `app/main.py`
+- `eval/eval_set.json`
+- `eval/run_eval.py`
+- `eval/results/rag_eval_results.json`
+- `eval/results/comparison.md`
+
+### RAG Implementation Details
+
+**Step 1 – User Question**
+
+The user submits a question through the API.
+
+**Step 2 – Question Embedding**
+
+The application converts the question into a numerical embedding using the embedding model.
+
+**Step 3 – Document Retrieval**
+
+ChromaDB retrieves relevant document chunks using similarity search.
+
+**Step 4 – Context Preparation**
+
+The retrieved document chunks are prepared as context for the LLM.
+
+**Step 5 – LLM Response Generation**
+
+The Groq LLM generates an answer based on the retrieved context.
+
+**Step 6 – Source References**
+
+The response includes source references to identify the retrieved documents.
+
+**Step 7 – Unsupported Question Handling**
+
+The model is instructed to respond with `I don't know.` when sufficient supporting information is unavailable.
+
+### RAG Evaluation Configuration
+
+Two retrieval configurations were compared.
+
+| Parameter | Configuration A | Configuration B |
+|---|---:|---:|
+| Chunk Size | 1000 | 500 |
+| Chunk Overlap | 150 | 75 |
+| Top-K | 3 | 5 |
+| Generated Chunks | 136 | 140 |
+| Evaluation Questions | 15 | 15 |
+
+### RAG Evaluation Results
+
+| Evaluation Metric | Configuration A | Configuration B |
+|---|---:|---:|
+| Successful Generations | 15 | 15 |
+| Average Keyword Coverage | 0.6667 | 0.6667 |
+| Citation Rate | 0.7143 | 0.7143 |
+| Correct Abstentions | 1 | 1 |
+| Generation Errors | 0 | 0 |
+
+### Evaluation Observations
+
+- Both configurations completed all 15 generations.
+- Both configurations produced identical keyword coverage.
+- Both configurations produced identical citation rates.
+- Both configurations correctly abstained on one designated unanswerable question.
+- Configuration A retrieves fewer chunks per query and was selected as the initial operational configuration.
+- The evaluation results do not establish that Configuration A is more accurate than Configuration B.
+
+### API Testing
+
+The `POST /ask` endpoint was tested using Swagger UI.
+
+**Test 1 – Agricultural Machinery Question**
+
+- Submitted a question related to agricultural machinery.
+- Retrieved relevant document chunks.
+- Generated an answer using the retrieved context.
+- Checked the source references.
+
+**Test 2 – Unanswerable Tractor Subsidy Deadline Question**
+
+- Submitted a question about the current tractor subsidy application deadline.
+- Tested the model's ability to avoid unsupported claims.
+- The tested response returned `I don't know.`
+- Checked the returned source references.
+
+### Evaluation Limitations
+
+- Keyword coverage is a proxy metric and does not establish factual correctness.
+- Citation rate measures the presence of citations, not whether citations fully support the answers.
+- Some questions marked answerable were not answered by either configuration.
+- Generated answers and source references require manual verification against official documents.
+- The abstention behavior is prompt-driven and requires further validation.
+- The evaluation does not establish that all generated responses are factually correct.
+
+### Deliverables
+
+- RAG question-answering pipeline.
+- `POST /ask` API endpoint.
+- ChromaDB-based document retrieval.
+- Groq-based answer generation.
+- Source-based response generation.
+- 15-question evaluation dataset.
+- RAG evaluation script.
+- Retrieval configuration comparison report.
+
+**Status:** Completed – Initial RAG evaluation performed.
+
+---
+
+# 6. API Documentation
+
+The FastAPI application provides endpoints for accessing scheme information, searching records, and interacting with the AI assistant.
+
+| HTTP Method | Endpoint | Description |
+|---|---|---|
+| GET | `/health` | Checks application health. |
+| GET | `/records` | Retrieves available scheme records. |
+| GET | `/records/{id}` | Retrieves a specific scheme record. |
+| GET | `/search` | Performs traditional text search. |
+| GET | `/questions` | Retrieves prepared farmer questions. |
+| POST | `/chat` | Generates AI responses using the existing chat workflow. |
+| POST | `/search/semantic` | Performs semantic document search. |
+| POST | `/ask` | Generates RAG-based answers with source references. |
+
+## 6.1 API Testing
+
+FastAPI Swagger UI is used for testing and interacting with available API endpoints.
+
+**Swagger UI URL:**
+
+`http://127.0.0.1:8000/docs`
+
+**Note:** Confirm the endpoint paths and HTTP methods against the actual implementation in `app/main.py`.
+
+---
+
+# 7. RAG Architecture
+
+The current RAG workflow consists of the following stages:
+
+```text
+             User Question
+                   |
+                   v
+          Question Embedding
+                   |
+                   v
+           ChromaDB Retrieval
+                   |
+                   v
+        Relevant Document Chunks
+                   |
+                   v
+           Context Preparation
+                   |
+                   v
+               Groq LLM
+                   |
+                   v
+          Answer Generation
+                   |
+                   v
+          Source-Based Citations
+                   |
+                   v
+             Final Response
+```
+
+## 7.1 Architecture Components
+
+| Component | Responsibility |
+|---|---|
+| Document Ingestion | Collects and extracts document content. |
+| Chunking | Divides documents into smaller sections. |
+| Embedding Model | Converts text into numerical vectors. |
+| ChromaDB | Stores and retrieves document embeddings. |
+| Retriever | Finds relevant document chunks. |
+| Groq LLM | Generates answers using retrieved context. |
+| RAG Pipeline | Coordinates retrieval and response generation. |
+| FastAPI | Exposes project functionality through REST APIs. |
+
+---
+
+# 8. Application Setup and Execution
+
+## 8.1 Prerequisites
+
+- Python installed.
+- Git installed.
+- VS Code or another Python IDE.
+- Groq API key.
+- Required Python dependencies.
+
+## 8.2 Clone the Repository
 
 ```bash
 git clone https://github.com/Adityahon3344/Gen-AI-Examate.git
+
 cd Gen-AI-Examate
 ```
 
-### Create Virtual Environment
+## 8.3 Create a Virtual Environment
 
 ```bash
-python -m venv .venv
+python3 -m venv .venv
 ```
 
-### Activate Environment
+## 8.4 Activate the Virtual Environment
 
-macOS / Linux:
+For macOS/Linux:
 
 ```bash
 source .venv/bin/activate
 ```
 
-Windows:
+## 8.5 Install Dependencies
 
 ```bash
-.venv\Scripts\activate
+pip install -r requirements.txt
 ```
 
-### Install Dependencies
+## 8.6 Configure Environment Variables
 
-```bash
-python -m pip install -r requirements.txt
-```
-
-### Configure Environment Variables
-
-Create your local `.env` file using the example:
-
-```bash
-cp .env.example .env
-```
-
-Open `.env` and add your own Groq API key:
+Create a `.env` file in the project root.
 
 ```env
-GROQ_API_KEY=your_actual_groq_api_key
+GROQ_API_KEY=your_groq_api_key
+GROQ_MODEL=your_configured_groq_model
 ```
 
-*Important: Keep your actual API key private. Never commit or upload your `.env` file to GitHub.*
+Use the actual model configured in your application.
 
-### Run CLI Application
+Do not upload API keys or other secrets to GitHub.
 
-```bash
-python -m app.cli
-```
-
-### Run Data Analysis
-
-```bash
-python -m analysis.explore
-```
-
-### Run Record Synchronization
-
-```bash
-python sync_records.py
-```
-
-### Run Prompt Evaluation
-
-```bash
-python eval/run_prompt_eval.py
-```
-
-### Run Document Chunking
-
-```bash
-python -m app.chunking
-```
-
-This processes the PDF and HTML files in `data/raw/` and generates `data/chunks.json`.
-
-### Generate Document Embeddings
-
-```bash
-python -m app.embed
-```
-
-This generates 384-dimensional embeddings for the document chunks.
-
-### Run Semantic Search Evaluation
-
-```bash
-python -m app.semantic_search
-```
-
-This evaluates the 10 predefined farmer questions and saves the results in `eval/search_results.md`.
-
-### Create ChromaDB Vector Database
-
-```bash
-python -m app.vectorstore
-```
-
-This indexes the document chunks and embeddings into the persistent ChromaDB collection.
-
-### Start FastAPI Server
+## 8.7 Start the FastAPI Server
 
 ```bash
 uvicorn app.main:app --reload
 ```
 
-**Application URL:**
+## 8.8 Open Swagger UI
 
-`http://127.0.0.1:8000`
-
-**Swagger Documentation:**
+Open the following URL in your browser:
 
 `http://127.0.0.1:8000/docs`
 
-### Test Semantic Search API
+Use Swagger UI to test the available API endpoints.
 
-```bash
-curl -G "http://127.0.0.1:8000/search/semantic" \
-  --data-urlencode "q=Which government schemes provide financial assistance for purchasing agricultural machinery and tractors?" \
-  --data-urlencode "top_k=3"
-```
-
-*Note: The `data/chroma_db/` directory is generated locally when the vector database is created. It is excluded from Git and should be regenerated by running `python -m app.vectorstore` after generating the chunks and embeddings.*
+**Important:** The ChromaDB collection must be initialized before testing semantic search or the RAG endpoint. Follow the project's document indexing workflow if the vector database is not available.
 
 ---
 
-## 11. Version Control and Checkpoints
+# 9. Testing and Evaluation
 
-Git is used to maintain development history and GitHub is used for repository hosting.
+Testing is performed throughout development to verify the functionality of individual modules and the overall application.
 
-### Completed Tags
+## 9.1 Testing Categories
 
-| Tag | Description |
+| Testing Category | Purpose |
 |---|---|
-| `week-1` | Week 1 development checkpoint |
-| `checkpoint-1` | Day 5 documentation and API checkpoint |
+| Python Execution | Verifies basic program execution. |
+| Dataset Validation | Checks structured scheme records. |
+| Document Ingestion | Checks extracted document content. |
+| Traditional Search | Evaluates TF-IDF search results. |
+| API Testing | Checks FastAPI endpoint responses. |
+| Embedding Testing | Verifies embedding generation and dimensions. |
+| Vector Database Testing | Checks document storage and retrieval. |
+| Semantic Search | Checks similarity-based retrieval. |
+| RAG Testing | Checks generated answers and source references. |
+| Evaluation Testing | Compares retrieval configurations. |
 
-### Day 6 Git Commit
+## 9.2 Evaluation Files
 
-`Complete Day 6 Groq LLM integration and prompt evaluation`
+The following files contain evaluation datasets, scripts, and reports:
 
-### Day 7 Git Commit
+- `eval/prompt_compare.md`
+- `eval/search_results.md`
+- `eval/eval_set.json`
+- `eval/run_eval.py`
+- `eval/results/rag_eval_results.json`
+- `eval/results/comparison.md`
 
-`Complete Day 7 semantic search and ChromaDB integration`
+## 9.3 Run the RAG Evaluation
 
-### Useful Git Commands
+```bash
+python eval/run_eval.py
+```
+
+The evaluation script compares the configured retrieval experiments and generates result reports.
+
+---
+
+# 10. Current Project Status
+
+| Project Module | Status |
+|---|---|
+| Python Fundamentals | Completed |
+| Scheme Dataset Preparation | Completed |
+| Document Collection | Completed |
+| Document Ingestion | Completed |
+| FastAPI Backend | Implemented |
+| TF-IDF Search | Implemented |
+| Groq Integration | Implemented |
+| Prompt Engineering | Implemented |
+| Document Chunking | Implemented |
+| Embedding Generation | Implemented |
+| ChromaDB Integration | Implemented |
+| Semantic Search | Implemented |
+| RAG Pipeline | Implemented |
+| Source-Based Citations | Implemented |
+| RAG Evaluation | Initial Evaluation Completed |
+
+---
+
+# 11. Daily Development Verification
+
+Daily development activities are documented to maintain transparency and make project progress easy for the trainer to review.
+
+Each development day should include:
+
+1. Development objective.
+2. Tasks completed.
+3. Files created or modified.
+4. Implementation details.
+5. Testing performed.
+6. Results and observations.
+7. Evidence screenshots.
+8. GitHub commit reference.
+9. Completion status.
+
+## 11.1 Daily Progress Report Template
+
+Maintain this format in `docs/DAILY_PROGRESS.md`.
+
+```markdown
+# Daily Development Progress Report
+
+## Day [Number] – [Development Topic]
+
+**Date:** [DD Month YYYY]
+
+### Objective
+[Describe the development objective.]
+
+### Tasks Completed
+1. [Task 1]
+2. [Task 2]
+3. [Task 3]
+
+### Files Created or Modified
+- [File path 1]
+- [File path 2]
+
+### Implementation Details
+[Explain the implementation.]
+
+### Testing Performed
+- [Test 1]
+- [Test 2]
+
+### Results and Observations
+[Record actual test results.]
+
+### Evidence
+- Terminal execution screenshot
+- API testing screenshot
+- Code implementation screenshot
+- Evaluation report, if applicable
+
+### GitHub Commit
+[Add GitHub commit URL]
+
+**Status:** Completed / In Progress
+```
+
+## 11.2 Trainer Verification
+
+The trainer can review the project's development through:
+
+- GitHub repository and commit history.
+- Daily development progress reports.
+- Source code changes.
+- API testing results.
+- Terminal execution screenshots.
+- Evaluation datasets and reports.
+- Project documentation.
+
+---
+
+# 12. Daily Project Updates
+
+The KrishiYojana project follows a day-wise development approach. Project activities, implementation changes, and testing results are documented regularly.
+
+## 12.1 Development Tracking
+
+| Day | Development Activity | Status |
+|---|---|---|
+| Day 1 | Python Fundamentals | Completed |
+| Day 2 | Dataset Preparation and Structuring | Completed |
+| Day 3 | Document Collection and Ingestion | Completed |
+| Day 4 | Backend Development and Traditional Search | Completed |
+| Day 5 | LLM Fundamentals and Question Preparation | Completed |
+| Day 6 | Groq Integration and Prompt Engineering | Completed |
+| Day 7 | Document Chunking, Embeddings and ChromaDB | Completed |
+| Day 8 | RAG Pipeline, Ask API and Evaluation | Completed |
+
+## 12.2 Daily GitHub Update Process
+
+After completing and testing daily development activities:
+
+1. Update the relevant source code.
+2. Update `README.md` when project documentation changes.
+3. Update `docs/DAILY_PROGRESS.md` with actual daily work.
+4. Save relevant testing evidence.
+5. Stage the required changes using Git.
+6. Commit the changes with a descriptive commit message.
+7. Push the changes to the GitHub repository.
+
+Example Git commands:
 
 ```bash
 git status
-git log --oneline
-git tag
-git add .
-git commit -m "Your commit message"
+
+git add README.md docs/ app/ eval/
+
+git commit -m "docs: update daily project development progress"
+
 git push origin master
 ```
 
-**Repository:**
+Only commit files that have been reviewed and do not contain secrets, virtual environments, or generated database files.
+
+---
+
+# 13. Known Limitations and Future Improvements
+
+## 13.1 Current Limitations
+
+1. The current document collection does not cover every agricultural government scheme.
+2. Some retrieved information may be incomplete or outdated.
+3. Keyword coverage does not establish factual answer accuracy.
+4. Citation presence does not guarantee citation correctness.
+5. Some answerable evaluation questions currently result in abstentions.
+6. The current abstention behavior is prompt-driven and requires further validation.
+7. Scheme eligibility, benefits, and application deadlines require verification against current official government sources.
+
+## 13.2 Future Improvements
+
+1. Expand the agricultural scheme knowledge base.
+2. Add more verified official government documents.
+3. Improve document retrieval and ranking.
+4. Improve answer validation and citation verification.
+5. Refine the abstention mechanism.
+6. Add more evaluation questions.
+7. Perform manual factual evaluation against official sources.
+8. Improve API response handling and error management.
+9. Develop a farmer-friendly frontend.
+10. Add multilingual support for Marathi and other regional languages.
+
+---
+
+# 14. Project Disclaimer
+
+KrishiYojana is an educational AI project developed to demonstrate Generative AI and Retrieval-Augmented Generation concepts.
+
+The application provides information based on its available document collection. It is not an official government service and does not make legally binding eligibility decisions.
+
+Farmers should verify scheme eligibility, benefits, required documents, and application deadlines through the relevant official government portals or authorities.
+
+---
+
+# 15. Repository Information
+
+| Field | Details |
+|---|---|
+| Project Name | KrishiYojana |
+| Repository Name | Gen-AI-Examate |
+| Development Progress | Day 1 – Day 8 |
+| Project Category | Generative AI / RAG |
+| Programming Language | Python |
+| Backend Framework | FastAPI |
+| LLM Provider | Groq |
+| Embedding Model | all-MiniLM-L6-v2 |
+| Vector Database | ChromaDB |
+| Version Control | Git and GitHub |
+
+**GitHub Repository:**
 
 https://github.com/Adityahon3344/Gen-AI-Examate
 
 ---
 
-## 12. Future Development Roadmap
+# 16. Conclusion
 
-The following improvements are planned for subsequent development stages:
+KrishiYojana demonstrates the development of an AI-powered agricultural information assistant using Python, FastAPI, Groq, Sentence Transformers, and ChromaDB.
 
-- Expand and validate the agricultural scheme dataset.
-- Improve scheme eligibility matching.
-- Implement robust handling of questions that cannot be answered from available data.
-- Improve LLM response quality and factual reliability.
-- Review and improve prompt evaluation.
-- Connect ChromaDB semantic retrieval with the Groq LLM to develop a complete RAG workflow.
-- Improve document retrieval relevance and ranking.
-- Expand document coverage for schemes beyond farm mechanization.
-- Introduce multilingual support for Marathi, Hindi, and English.
-- Develop a farmer-friendly web interface.
-- Integrate a persistent database.
-- Improve search relevance and recommendation accuracy.
-- Incorporate verified updates from official government sources.
-- Implement more detailed eligibility assessment using verified scheme guidelines.
+During the first eight development days, the project progressed from Python fundamentals and dataset preparation to document ingestion, traditional search, LLM integration, semantic search, vector storage, RAG implementation, API development, and initial evaluation.
 
----
+The current implementation establishes the foundation for document-based agricultural question answering.
 
-## 13. Official References
-
-- [Maharashtra MahaDBT Farmer Portal](https://mahadbt.maharashtra.gov.in/Farmer/)
-- [Maharashtra Government Official Portal](https://www.maharashtra.gov.in/)
-
----
-
-## 14. Disclaimer
-
-KrishiYojana is an educational software development project and is not an official government application.
-
-The information provided by the application should not be considered an official confirmation of eligibility or benefit entitlement.
-
-Users should verify scheme details, eligibility criteria, benefits, application deadlines, and documentation requirements through the relevant government departments and official portals.
-
-AI-generated responses may contain errors or incomplete information. Users should not rely on generated responses as a substitute for official government guidance.
-
----
-
-## 15. Project Information
-
-| Attribute | Details |
-|---|---|
-| Project | KrishiYojana |
-| Domain | Agriculture and Artificial Intelligence |
-| Language | Python |
-| Backend | FastAPI |
-| Search Techniques | TF-IDF, Cosine Similarity, Semantic Search |
-| LLM Provider | Groq |
-| LLM Integration | Groq Python SDK |
-| Embedding Model | all-MiniLM-L6-v2 |
-| Vector Database | ChromaDB |
-| Prompt Engineering | System and Task Prompts |
-| Dataset | 19 scheme records |
-| Document Chunks | 136 |
-| Embedding Dimensions | 384 |
-| API Endpoints | 7 |
-| Development Progress | Day 1–Day 7 |
-| Latest Checkpoint | Day 7 Semantic Search and ChromaDB Integration |
-| Repository | Adityahon3344/Gen-AI-Examate |
-
----
-
-**KrishiYojana – Making Agricultural Scheme Information More Accessible Through Technology.**
+Further development will focus on expanding the knowledge base, improving retrieval quality, validating factual accuracy, verifying citations, and supporting multilingual access for farmers.

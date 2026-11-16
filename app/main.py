@@ -12,25 +12,38 @@ from pydantic import BaseModel, Field
 from app.records import load_json_records
 from app.smart_search import smart_search
 from app.llm import generate_response
+from app.rag import ask_question
 
 
-# Initialize FastAPI application
+# --------------------------------------------------
+# 1. Initialize FastAPI application
+# --------------------------------------------------
+
 app = FastAPI(
     title="KrishiYojana API",
     description="Maharashtra Farmer Scheme Eligibility and Benefits Assistant",
-    version="1.2.0"
+    version="1.3.0"
 )
 
 
-# Project directories
+# --------------------------------------------------
+# 2. Project directories
+# --------------------------------------------------
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 PROMPTS_DIR = BASE_DIR / "prompts"
 
-# ChromaDB configuration
+
+# --------------------------------------------------
+# 3. ChromaDB configuration
+# --------------------------------------------------
+
 DB_PATH = BASE_DIR / "data" / "chroma_db"
 COLLECTION_NAME = "krishiyojana_documents"
 
-chroma_client = chromadb.PersistentClient(path=str(DB_PATH))
+chroma_client = chromadb.PersistentClient(
+    path=str(DB_PATH)
+)
 
 try:
     vector_collection = chroma_client.get_collection(
@@ -39,38 +52,68 @@ try:
 except Exception:
     vector_collection = None
 
-# Load embedding model
+
+# --------------------------------------------------
+# 4. Load embedding model
+# --------------------------------------------------
+
 embedding_model = SentenceTransformer(
     "sentence-transformers/all-MiniLM-L6-v2"
 )
 
 
-# 1. Health Check API
+# --------------------------------------------------
+# 5. Farmer question request model
+# --------------------------------------------------
+
+class QuestionRequest(BaseModel):
+    question: str = Field(
+        ...,
+        min_length=1,
+        description="Enter a farmer's agricultural scheme question"
+    )
+
+
+# --------------------------------------------------
+# 6. Health Check API
+# --------------------------------------------------
+
 @app.get("/health")
 def health_check():
     """Check whether the KrishiYojana API is running."""
+
     return {
         "status": "success",
         "message": "KrishiYojana API is running!"
     }
 
 
-# 2. Get All Records API
+# --------------------------------------------------
+# 7. Get All Records API
+# --------------------------------------------------
+
 @app.get("/records")
 def get_all_records(limit: int = Query(default=10, ge=1)):
     """Retrieve agricultural scheme records."""
+
     records = load_json_records()
 
     return {
         "total": len(records[:limit]),
-        "records": [asdict(record) for record in records[:limit]]
+        "records": [
+            asdict(record) for record in records[:limit]
+        ]
     }
 
 
-# 3. Get Record By ID API
+# --------------------------------------------------
+# 8. Get Record By ID API
+# --------------------------------------------------
+
 @app.get("/records/{record_id}")
 def get_record_by_id(record_id: int):
     """Retrieve an agricultural scheme using its ID."""
+
     records = load_json_records()
 
     for record in records:
@@ -83,33 +126,34 @@ def get_record_by_id(record_id: int):
     )
 
 
-# 4. Smart Search API using TF-IDF
+# --------------------------------------------------
+# 9. Smart Search API using TF-IDF
+# --------------------------------------------------
+
 @app.get("/search")
 def search_records(q: str = Query(..., min_length=1)):
     """Search schemes using TF-IDF and cosine similarity."""
+
     records = load_json_records()
     results = smart_search(records, q, top_k=5)
 
     return {
         "query": q,
         "total": len(results),
-        "results": [asdict(record) for record in results]
+        "results": [
+            asdict(record) for record in results
+        ]
     }
 
 
-# 5. Farmer Question Request Model
-class QuestionRequest(BaseModel):
-    question: str = Field(
-        ...,
-        min_length=1,
-        description="Enter a farmer's agricultural scheme question"
-    )
+# --------------------------------------------------
+# 10. Farmer Questions API using Smart Search
+# --------------------------------------------------
 
-
-# 6. Farmer Questions API using Smart Search
 @app.post("/questions")
-def ask_question(request: QuestionRequest):
+def ask_farmer_question(request: QuestionRequest):
     """Find relevant agricultural schemes for a farmer's question."""
+
     question = request.question.strip()
 
     if not question:
@@ -135,7 +179,10 @@ def ask_question(request: QuestionRequest):
     }
 
 
-# 7. Semantic Search API using ChromaDB
+# --------------------------------------------------
+# 11. Semantic Search API using ChromaDB
+# --------------------------------------------------
+
 @app.get("/search/semantic")
 def semantic_search(
     q: str = Query(..., min_length=1),
@@ -150,13 +197,11 @@ def semantic_search(
         )
 
     try:
-        # Generate query embedding
         query_embedding = embedding_model.encode(
             [q.strip()],
             normalize_embeddings=True
         )
 
-        # Search ChromaDB
         results = vector_collection.query(
             query_embeddings=query_embedding.tolist(),
             n_results=min(top_k, vector_collection.count()),
@@ -176,13 +221,13 @@ def semantic_search(
             matches.append({
                 "id": results["ids"][0][index],
                 "text": results["documents"][0][index],
-                "source": metadata["source"],
+                "source": metadata.get("source"),
                 "page": (
-                    metadata["page"]
-                    if metadata["page"] != -1
+                    metadata.get("page")
+                    if metadata.get("page") != -1
                     else None
                 ),
-                "title": metadata["title"],
+                "title": metadata.get("title"),
                 "similarity_score": round(
                     max(0.0, min(1.0, 1.0 - distance)),
                     4
@@ -205,13 +250,18 @@ def semantic_search(
         )
 
 
-# 8. Load Prompt Files
+# --------------------------------------------------
+# 12. Load Prompt Files
+# --------------------------------------------------
+
 def load_prompt(filename):
     """Read a prompt file from the prompts directory."""
+
     prompt_path = PROMPTS_DIR / filename
 
     try:
         return prompt_path.read_text(encoding="utf-8")
+
     except OSError:
         raise HTTPException(
             status_code=500,
@@ -219,7 +269,10 @@ def load_prompt(filename):
         )
 
 
-# 9. Chat API using Groq LLM
+# --------------------------------------------------
+# 13. Chat API using Groq LLM and TF-IDF
+# --------------------------------------------------
+
 @app.post("/chat")
 def chat_with_farmer(request: QuestionRequest):
     """Generate an AI answer using Groq and scheme records."""
@@ -232,15 +285,12 @@ def chat_with_farmer(request: QuestionRequest):
             detail="Question cannot be empty"
         )
 
-    # Load system and task prompts
     system_prompt = load_prompt("system_prompt.txt")
     task_prompt = load_prompt("task_prompt_1.txt")
 
-    # Retrieve relevant scheme records
     records = load_json_records()
     results = smart_search(records, question, top_k=5)
 
-    # Prepare scheme context
     context = "\n\n".join(
         f"Scheme: {record.scheme_name}\n"
         f"Department: {record.department}\n"
@@ -253,13 +303,11 @@ def chat_with_farmer(request: QuestionRequest):
     if not context:
         context = "No matching scheme information was found."
 
-    # Prepare user prompt
     user_prompt = task_prompt.format(
         question=question,
         context=context
     )
 
-    # Request JSON output from Groq
     json_instruction = """
 Return only valid JSON without Markdown code blocks.
 
@@ -286,7 +334,6 @@ Rules:
 
         result = json.loads(ai_response)
 
-        # Validate response fields
         answer = result.get("answer")
         confidence = result.get("confidence")
         follow_up = result.get("follow_up")
@@ -322,4 +369,52 @@ Rules:
         raise HTTPException(
             status_code=502,
             detail="Unable to generate a response from the AI service"
+        )
+
+
+# --------------------------------------------------
+# 14. RAG API using ChromaDB and Groq
+# --------------------------------------------------
+
+@app.post("/ask")
+def ask_with_rag(request: QuestionRequest):
+    """
+    Answer farmer questions using retrieved document chunks,
+    Groq LLM, and source citations.
+    """
+
+    question = request.question.strip()
+
+    if not question:
+        raise HTTPException(
+            status_code=400,
+            detail="Question cannot be empty."
+        )
+
+    if vector_collection is None:
+        raise HTTPException(
+            status_code=503,
+            detail="ChromaDB collection is not available."
+        )
+
+    try:
+        result = ask_question(
+            question=question,
+            vector_collection=vector_collection,
+            embedding_model=embedding_model,
+            top_k=3
+        )
+
+        return result
+
+    except ValueError as error:
+        raise HTTPException(
+            status_code=400,
+            detail=str(error)
+        )
+
+    except Exception:
+        raise HTTPException(
+            status_code=502,
+            detail="Unable to generate a RAG response."
         )

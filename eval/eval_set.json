@@ -1,0 +1,94 @@
+
+[
+  {
+    "id": 1,
+    "question": "Which government schemes provide assistance for purchasing agricultural machinery?",
+    "expected_keywords": ["farm mechanization", "agricultural machinery", "subsidy"],
+    "answerable": true
+  },
+  {
+    "id": 2,
+    "question": "What benefits are available under the Birsa Munda Krishi Kranti Yojana?",
+    "expected_keywords": ["Birsa Munda", "benefits", "agriculture"],
+    "answerable": true
+  },
+  {
+    "id": 3,
+    "question": "Which government scheme provides assistance for drip irrigation?",
+    "expected_keywords": ["drip irrigation", "Per Drop More Crop", "irrigation"],
+    "answerable": true
+  },
+  {
+    "id": 4,
+    "question": "What documents are generally required when applying for agricultural government schemes?",
+    "expected_keywords": ["documents", "application", "farmer"],
+    "answerable": true
+  },
+  {
+    "id": 5,
+    "question": "Which government schemes provide support for fruit orchards and horticulture?",
+    "expected_keywords": ["horticulture", "fruit orchard", "MIDH"],
+    "answerable": true
+  },
+  {
+    "id": 6,
+    "question": "What is the last date to apply for the agricultural tractor subsidy scheme for the current financial year?",
+    "expected_keywords": [],
+    "answerable": false,
+    "expected_abstention": true
+  },
+  {
+    "id": 7,
+    "question": "Which schemes are available under the National Food Security Mission?",
+    "expected_keywords": ["NFSM", "food security", "food grains"],
+    "answerable": true
+  },
+  {
+    "id": 8,
+    "question": "Is there any government scheme that provides assistance for constructing an individual farm pond?",
+    "expected_keywords": ["farm pond", "individual farm pond", "irrigation"],
+    "answerable": true
+  },
+  {
+    "id": 9,
+    "question": "Is there any subsidy available for purchasing a sugarcane harvesting machine?",
+    "expected_keywords": ["sugarcane", "harvester", "subsidy"],
+    "answerable": true
+  },
+  {
+    "id": 10,
+    "question": "Which scheme provides financial assistance to farmers in case of accidental death?",
+    "expected_keywords": ["Gopinath Munde", "accident", "financial assistance"],
+    "answerable": true
+  },
+  {
+    "id": 11,
+    "question": "What is the purpose of the Bhausaheb Fundkar Phalbaag Lagvad Yojana?",
+    "expected_keywords": ["Bhausaheb Fundkar", "fruit plantation", "horticulture"],
+    "answerable": true
+  },
+  {
+    "id": 12,
+    "question": "Which scheme supports agricultural development in rainfed areas?",
+    "expected_keywords": ["rainfed", "RAD", "agricultural development"],
+    "answerable": true
+  },
+  {
+    "id": 13,
+    "question": "What is the purpose of the Chief Minister Agro and Food Processing Scheme?",
+    "expected_keywords": ["agro", "food processing", "scheme"],
+    "answerable": true
+  },
+  {
+    "id": 14,
+    "question": "Which scheme provides support for oilseed and oil palm production?",
+    "expected_keywords": ["NFSM", "oilseed", "oil palm"],
+    "answerable": true
+  },
+  {
+    "id": 15,
+    "question": "Which government scheme supports agricultural irrigation through water conservation?",
+    "expected_keywords": ["irrigation", "water conservation", "agriculture"],
+    "answerable": true
+  }
+]
