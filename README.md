@@ -19,7 +19,7 @@ The system is instructed to avoid generating unsupported information when the av
 
 **Project Category:** Generative AI / Retrieval-Augmented Generation
 
-**Development Progress:** Day 1 to Day 8
+**Development Progress:** Day 1 to Day 9
 
 **Primary Objective:** Develop an AI-powered assistant for agricultural scheme information.
 
@@ -43,6 +43,15 @@ The main objectives of this project are:
 12. Evaluate retrieval configurations and generated responses.
 13. Improve the reliability of answers by handling unsupported questions.
 
+## 2.1 Features
+
+- Structured scheme records with TF-IDF and semantic search.
+- RAG answers grounded in retrieved document chunks with source references.
+- A LangGraph agent that asks for approval before tool execution.
+- A configurable eligibility demonstration tool that checks farmer-provided details.
+- Thread-scoped in-memory graph checkpoints for pausing and resuming approvals.
+- FastAPI endpoints for health, records, search, chat, RAG, and agent workflows.
+
 ---
 
 # 3. Technology Stack
@@ -54,6 +63,8 @@ The main objectives of this project are:
 | LLM Provider | Groq |
 | Embedding Model | all-MiniLM-L6-v2 |
 | Vector Database | ChromaDB |
+| Agent Workflow | LangGraph |
+| Graph Checkpointing | LangGraph MemorySaver (in-memory) |
 | Traditional Search | TF-IDF |
 | Semantic Search | Sentence Transformers |
 | Data Processing | Pandas, NumPy |
@@ -94,7 +105,10 @@ Gen-AI-Examate/
 │   ├── embed.py
 │   ├── semantic_search.py
 │   ├── vectorstore.py
-│   └── rag.py
+│   ├── rag.py
+│   ├── graph.py
+│   ├── agent_loop.py
+│   └── tools.py
 │
 ├── data/
 │   ├── raw/
@@ -104,6 +118,8 @@ Gen-AI-Examate/
 │   │   └── extracted_text.txt
 │   │
 │   ├── chroma_db/
+│   ├── rules/
+│   │   └── scheme_rules.json
 │   ├── records.json
 │   └── sample_records.py
 │
@@ -128,6 +144,7 @@ Gen-AI-Examate/
 │
 ├── day01_intro.py
 ├── day01_menu.py
+├── test_day9.py
 ├── requirements.txt
 ├── .gitignore
 ├── .env
@@ -154,7 +171,7 @@ Gen-AI-Examate/
 
 ---
 
-# 5. Project Development Progress – Day 1 to Day 8
+# 5. Project Development Progress – Day 1 to Day 9
 
 This section documents the development activities, implementation details, files created, testing performed, and deliverables for each development day.
 
@@ -661,6 +678,28 @@ The `POST /ask` endpoint was tested using Swagger UI.
 
 **Status:** Completed – Initial RAG evaluation performed.
 
+## Day 9 – LangGraph Approval and Eligibility Tool
+
+**Objective:** Add approval-gated agent tool execution, an eligibility demonstration tool, and API/workflow coverage.
+
+### Tasks Completed
+
+1. Added LangGraph tool selection, approval interrupts, tool execution, and resume handling.
+2. Used the same `thread_id` for the initial request and its approval response.
+3. Identified that an approval resumed after an application restart has no `MemorySaver` checkpoint; the missing graph state previously surfaced as `KeyError('question')`.
+4. Added pending-approval checkpoint validation. A missing or expired checkpoint now returns HTTP 409 with a restart-aware explanation instead of the raw key error.
+5. Added validation that requests farmer details instead of calling the eligibility tool with missing or blank fields.
+6. Documented the eligibility rules as demonstration-only; they do not represent official government rules or decisions.
+7. Added tests for API routes, approval/rejection, thread resumption, eligibility outcomes, and missing details.
+
+### Testing Performed
+
+- `python -m unittest test_day9 -v` — six focused tests covering the listed API and agent flows.
+- The `/chat` and `/ask` tests use mocked LLM/RAG responses; live Groq credentials are not required for this suite.
+- Semantic search is exercised with a deterministic test collection; live vector retrieval is separately available through the running application.
+
+**Status:** Completed
+
 ---
 
 # 6. API Documentation
@@ -673,20 +712,47 @@ The FastAPI application provides endpoints for accessing scheme information, sea
 | GET | `/records` | Retrieves available scheme records. |
 | GET | `/records/{id}` | Retrieves a specific scheme record. |
 | GET | `/search` | Performs traditional text search. |
-| GET | `/questions` | Retrieves prepared farmer questions. |
+| POST | `/questions` | Finds matching schemes for a farmer question. |
+| GET | `/search/semantic` | Searches indexed document chunks by semantic similarity. |
 | POST | `/chat` | Generates AI responses using the existing chat workflow. |
-| POST | `/search/semantic` | Performs semantic document search. |
 | POST | `/ask` | Generates RAG-based answers with source references. |
+| POST | `/agent` | Starts or resumes an approval-gated LangGraph conversation. |
+
+### Agent approval examples
+
+Start an agent request (the response contains the `thread_id` to keep):
+
+```json
+{
+  "question": "Am I eligible for the farm mechanization scheme?",
+  "farmer_details": {
+    "land_holding": "7/12 holder",
+    "land_size_acres": 2.0,
+    "caste_category": "OBC",
+    "received_same_component_last_10_years": false,
+    "already_has_tractor": false
+  }
+}
+```
+
+Resume with the exact returned `thread_id` and an approval value:
+
+```json
+{
+  "thread_id": "returned-thread-id",
+  "approval": true
+}
+```
+
+`approval: false` ends the pending tool request with `status: "rejected"`. If the checkpoint is unavailable (for example, after an application restart), `/agent` returns HTTP 409 and the caller must start a new request.
 
 ## 6.1 API Testing
 
-FastAPI Swagger UI is used for testing and interacting with available API endpoints.
+FastAPI Swagger UI is available at `http://127.0.0.1:8000/docs`. The automated suite is described in [Testing and Evaluation](#9-testing-and-evaluation).
 
 **Swagger UI URL:**
 
 `http://127.0.0.1:8000/docs`
-
-**Note:** Confirm the endpoint paths and HTTP methods against the actual implementation in `app/main.py`.
 
 ---
 
@@ -735,6 +801,33 @@ The current RAG workflow consists of the following stages:
 | RAG Pipeline | Coordinates retrieval and response generation. |
 | FastAPI | Exposes project functionality through REST APIs. |
 
+## 7.2 LangGraph Approval and Checkpointing
+
+The `/agent` endpoint routes a question to either the eligibility tool or RAG search. The graph then pauses at an approval interrupt:
+
+```text
+Question + farmer details
+        |
+        v
+Select tool -> Request approval (interrupt)
+                    |
+          +---------+---------+
+          |                   |
+      approval=true       approval=false
+          |                   |
+     Execute tool          Rejected
+```
+
+The initial response has `status: "awaiting_approval"` and a `thread_id`. Send that exact `thread_id` with the later `approval` value. An approved request continues to the selected tool; rejection ends without tool execution.
+
+LangGraph uses `MemorySaver` for checkpoints. Checkpoints exist only in the running process and are lost when the application restarts. A resume without a pending checkpoint returns HTTP 409; start a new `/agent` request. Use a durable checkpointer if approvals must survive restarts.
+
+## 7.3 Eligibility Checking Tool
+
+`app/tools.py` checks the five supplied fields against `data/rules/scheme_rules.json`: `land_holding`, `land_size_acres`, `caste_category`, `received_same_component_last_10_years`, and `already_has_tractor`. Missing or blank values are reported with a request for the specific details; `false` is accepted as a provided boolean value.
+
+These are **demonstration rules only**, not official government eligibility criteria. The tool provides no official or final eligibility decision. Verify current requirements with the relevant government department.
+
 ---
 
 # 8. Application Setup and Execution
@@ -744,8 +837,8 @@ The current RAG workflow consists of the following stages:
 - Python installed.
 - Git installed.
 - VS Code or another Python IDE.
-- Groq API key.
 - Required Python dependencies.
+- Groq API key for LLM-backed `/chat`, `/ask`, and RAG-agent responses.
 
 ## 8.2 Clone the Repository
 
@@ -788,13 +881,23 @@ Use the actual model configured in your application.
 
 Do not upload API keys or other secrets to GitHub.
 
-## 8.7 Start the FastAPI Server
+## 8.7 Prepare the Vector Database
+
+If `data/chroma_db` does not already contain the `krishiyojana_documents` collection, run the indexing stages from the project root:
+
+```bash
+python -m app.chunking
+python -m app.embed
+python -m app.vectorstore
+```
+
+## 8.8 Start the FastAPI Server
 
 ```bash
 uvicorn app.main:app --reload
 ```
 
-## 8.8 Open Swagger UI
+## 8.9 Open Swagger UI
 
 Open the following URL in your browser:
 
@@ -824,6 +927,16 @@ Testing is performed throughout development to verify the functionality of indiv
 | Semantic Search | Checks similarity-based retrieval. |
 | RAG Testing | Checks generated answers and source references. |
 | Evaluation Testing | Compares retrieval configurations. |
+
+### Run the Day 9 API and workflow tests
+
+From the project root, run:
+
+```bash
+python -m unittest test_day9 -v
+```
+
+The suite exercises `/health`, `/records`, `/records/{id}`, `/search`, `/questions`, `/search/semantic`, `/chat`, `/ask`, and `/agent`, including both approval outcomes, same-thread resume, eligible/ineligible demonstration inputs, and missing farmer details. LLM/RAG calls and semantic retrieval are mocked in this suite; it does not require a Groq API key.
 
 ## 9.2 Evaluation Files
 
@@ -865,6 +978,9 @@ The evaluation script compares the configured retrieval experiments and generate
 | RAG Pipeline | Implemented |
 | Source-Based Citations | Implemented |
 | RAG Evaluation | Initial Evaluation Completed |
+| LangGraph Approval Workflow | Implemented |
+| Eligibility Demonstration Tool | Implemented |
+| Day 9 API and Agent Tests | Implemented |
 
 ---
 
@@ -959,6 +1075,7 @@ The KrishiYojana project follows a day-wise development approach. Project activi
 | Day 6 | Groq Integration and Prompt Engineering | Completed |
 | Day 7 | Document Chunking, Embeddings and ChromaDB | Completed |
 | Day 8 | RAG Pipeline, Ask API and Evaluation | Completed |
+| Day 9 | LangGraph Approval, Eligibility Tool and API Tests | Completed |
 
 ## 12.2 Daily GitHub Update Process
 
@@ -998,7 +1115,9 @@ Only commit files that have been reviewed and do not contain secrets, virtual en
 4. Citation presence does not guarantee citation correctness.
 5. Some answerable evaluation questions currently result in abstentions.
 6. The current abstention behavior is prompt-driven and requires further validation.
-7. Scheme eligibility, benefits, and application deadlines require verification against current official government sources.
+7. Eligibility checks use demonstration rules in `data/rules/scheme_rules.json`; they are not official government criteria and must not be treated as an official decision.
+8. `MemorySaver` stores checkpoints in memory only. Pending approvals cannot be resumed after application restart.
+9. Semantic search and RAG need an indexed ChromaDB collection; LLM-backed responses also need a valid Groq configuration.
 
 ## 13.2 Future Improvements
 
@@ -1031,13 +1150,14 @@ Farmers should verify scheme eligibility, benefits, required documents, and appl
 |---|---|
 | Project Name | KrishiYojana |
 | Repository Name | Gen-AI-Examate |
-| Development Progress | Day 1 – Day 8 |
+| Development Progress | Day 1 – Day 9 |
 | Project Category | Generative AI / RAG |
 | Programming Language | Python |
 | Backend Framework | FastAPI |
 | LLM Provider | Groq |
 | Embedding Model | all-MiniLM-L6-v2 |
 | Vector Database | ChromaDB |
+| Agent Workflow | LangGraph |
 | Version Control | Git and GitHub |
 
 **GitHub Repository:**
@@ -1048,9 +1168,9 @@ https://github.com/Adityahon3344/Gen-AI-Examate
 
 # 16. Conclusion
 
-KrishiYojana demonstrates the development of an AI-powered agricultural information assistant using Python, FastAPI, Groq, Sentence Transformers, and ChromaDB.
+KrishiYojana demonstrates the development of an AI-powered agricultural information assistant using Python, FastAPI, Groq, Sentence Transformers, ChromaDB, and LangGraph.
 
-During the first eight development days, the project progressed from Python fundamentals and dataset preparation to document ingestion, traditional search, LLM integration, semantic search, vector storage, RAG implementation, API development, and initial evaluation.
+During the first nine development days, the project progressed from Python fundamentals and dataset preparation to document ingestion, traditional search, LLM integration, semantic search, vector storage, RAG, approval-gated agent tools, an eligibility demonstration, API development, and evaluation.
 
 The current implementation establishes the foundation for document-based agricultural question answering.
 

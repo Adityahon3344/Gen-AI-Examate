@@ -1,0 +1,28 @@
+
+{
+  "farm_mechanization_demo": {
+    "scheme_name": "Farm Mechanization Assistance (Demo Rules)",
+    "rules": {
+      "land_holding": {
+        "allowed": ["7/12 holder"],
+        "failure_message": "Applicant must be listed as a 7/12 landholder."
+      },
+      "land_size_acres": {
+        "minimum": 0.5,
+        "failure_message": "Minimum land holding of 0.5 acres is required."
+      },
+      "caste_category": {
+        "allowed": ["SC", "ST", "OBC", "OPEN"],
+        "failure_message": "Caste category must be provided as SC, ST, OBC, or OPEN."
+      },
+      "received_same_component_last_10_years": {
+        "must_be": false,
+        "failure_message": "The same component must not have been received during the last 10 years."
+      },
+      "already_has_tractor": {
+        "must_be": false,
+        "failure_message": "Applicant must not already own a tractor."
+      }
+    }
+  }
+}

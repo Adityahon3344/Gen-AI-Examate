@@ -2,6 +2,7 @@
 import json
 from pathlib import Path
 from dataclasses import asdict
+from uuid import uuid4
 
 import chromadb
 from sentence_transformers import SentenceTransformer
@@ -9,10 +10,13 @@ from sentence_transformers import SentenceTransformer
 from fastapi import FastAPI, HTTPException, Query
 from pydantic import BaseModel, Field
 
+from langgraph.types import Command
+
 from app.records import load_json_records
 from app.smart_search import smart_search
 from app.llm import generate_response
 from app.rag import ask_question
+from app.graph import build_graph
 
 
 # --------------------------------------------------
@@ -22,7 +26,7 @@ from app.rag import ask_question
 app = FastAPI(
     title="KrishiYojana API",
     description="Maharashtra Farmer Scheme Eligibility and Benefits Assistant",
-    version="1.3.0"
+    version="1.4.0"
 )
 
 
@@ -63,7 +67,17 @@ embedding_model = SentenceTransformer(
 
 
 # --------------------------------------------------
-# 5. Farmer question request model
+# 5. Initialize LangGraph
+# --------------------------------------------------
+
+agent_graph = build_graph(
+    vector_collection=vector_collection,
+    embedding_model=embedding_model
+)
+
+
+# --------------------------------------------------
+# 6. Request Models
 # --------------------------------------------------
 
 class QuestionRequest(BaseModel):
@@ -74,8 +88,15 @@ class QuestionRequest(BaseModel):
     )
 
 
+class AgentRequest(BaseModel):
+    question: str | None = None
+    farmer_details: dict | None = None
+    thread_id: str | None = None
+    approval: bool | None = None
+
+
 # --------------------------------------------------
-# 6. Health Check API
+# 7. Health Check API
 # --------------------------------------------------
 
 @app.get("/health")
@@ -89,7 +110,7 @@ def health_check():
 
 
 # --------------------------------------------------
-# 7. Get All Records API
+# 8. Get All Records API
 # --------------------------------------------------
 
 @app.get("/records")
@@ -107,7 +128,7 @@ def get_all_records(limit: int = Query(default=10, ge=1)):
 
 
 # --------------------------------------------------
-# 8. Get Record By ID API
+# 9. Get Record By ID API
 # --------------------------------------------------
 
 @app.get("/records/{record_id}")
@@ -127,7 +148,7 @@ def get_record_by_id(record_id: int):
 
 
 # --------------------------------------------------
-# 9. Smart Search API using TF-IDF
+# 10. Smart Search API using TF-IDF
 # --------------------------------------------------
 
 @app.get("/search")
@@ -147,7 +168,7 @@ def search_records(q: str = Query(..., min_length=1)):
 
 
 # --------------------------------------------------
-# 10. Farmer Questions API using Smart Search
+# 11. Farmer Questions API using Smart Search
 # --------------------------------------------------
 
 @app.post("/questions")
@@ -180,7 +201,7 @@ def ask_farmer_question(request: QuestionRequest):
 
 
 # --------------------------------------------------
-# 11. Semantic Search API using ChromaDB
+# 12. Semantic Search API using ChromaDB
 # --------------------------------------------------
 
 @app.get("/search/semantic")
@@ -197,6 +218,15 @@ def semantic_search(
         )
 
     try:
+        total_chunks = vector_collection.count()
+
+        if total_chunks == 0:
+            return {
+                "query": q,
+                "total_results": 0,
+                "results": []
+            }
+
         query_embedding = embedding_model.encode(
             [q.strip()],
             normalize_embeddings=True
@@ -204,7 +234,7 @@ def semantic_search(
 
         results = vector_collection.query(
             query_embeddings=query_embedding.tolist(),
-            n_results=min(top_k, vector_collection.count()),
+            n_results=min(top_k, total_chunks),
             include=[
                 "documents",
                 "metadatas",
@@ -251,7 +281,7 @@ def semantic_search(
 
 
 # --------------------------------------------------
-# 12. Load Prompt Files
+# 13. Load Prompt Files
 # --------------------------------------------------
 
 def load_prompt(filename):
@@ -270,7 +300,7 @@ def load_prompt(filename):
 
 
 # --------------------------------------------------
-# 13. Chat API using Groq LLM and TF-IDF
+# 14. Chat API using Groq LLM and TF-IDF
 # --------------------------------------------------
 
 @app.post("/chat")
@@ -373,7 +403,7 @@ Rules:
 
 
 # --------------------------------------------------
-# 14. RAG API using ChromaDB and Groq
+# 15. RAG API using ChromaDB and Groq
 # --------------------------------------------------
 
 @app.post("/ask")
@@ -417,4 +447,114 @@ def ask_with_rag(request: QuestionRequest):
         raise HTTPException(
             status_code=502,
             detail="Unable to generate a RAG response."
+        )
+
+
+# --------------------------------------------------
+# 16. LangGraph Agent API with Human Approval
+# --------------------------------------------------
+
+@app.post("/agent")
+def run_langgraph_agent(request: AgentRequest):
+    """
+    Execute the LangGraph agent with human approval
+    and conversation memory.
+    """
+
+    thread_id = request.thread_id or str(uuid4())
+
+    config = {
+        "configurable": {
+            "thread_id": thread_id
+        }
+    }
+
+    try:
+
+        # ------------------------------------------
+        # Initial request: Start the graph
+        # ------------------------------------------
+
+        if request.approval is None:
+
+            question = (request.question or "").strip()
+
+            if not question:
+                raise HTTPException(
+                    status_code=400,
+                    detail="Question is required for a new conversation."
+                )
+
+            initial_state = {
+                "question": question,
+                "farmer_details": request.farmer_details or {}
+            }
+
+            result = agent_graph.invoke(
+                initial_state,
+                config=config
+            )
+
+            interrupts = result.get("__interrupt__", [])
+
+            if interrupts:
+                approval_request = interrupts[0].value
+
+                return {
+                    "thread_id": thread_id,
+                    "status": "awaiting_approval",
+                    "approval_request": approval_request
+                }
+
+            return {
+                "thread_id": thread_id,
+                "status": result.get("status", "completed"),
+                "tools_used": result.get("tools_to_use", []),
+                "results": result.get("results", {})
+            }
+
+        # ------------------------------------------
+        # Approval request: Resume the graph
+        # ------------------------------------------
+
+        if not request.thread_id:
+            raise HTTPException(
+                status_code=400,
+                detail="thread_id is required to submit approval."
+            )
+
+        checkpoint = agent_graph.get_state(config)
+        has_pending_approval = any(
+            task.name == "approval" and task.interrupts
+            for task in checkpoint.tasks
+        )
+        if not has_pending_approval:
+            raise HTTPException(
+                status_code=409,
+                detail=(
+                    "No pending approval was found for this thread_id. "
+                    "In-memory checkpoints are lost when the application "
+                    "restarts; start a new agent request."
+                )
+            )
+
+        result = agent_graph.invoke(
+            Command(resume=request.approval),
+            config=config
+        )
+
+        return {
+            "thread_id": thread_id,
+            "status": result.get("status", "completed"),
+            "tools_used": result.get("tools_to_use", []),
+            "results": result.get("results", {})
+        }
+
+    except HTTPException:
+        raise
+
+    except Exception as error:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Agent execution failed: {str(error)}"
         )
