@@ -89,7 +89,7 @@ The application combines Retrieval-Augmented Generation (RAG), semantic search, 
 
 ## 5. Project Folder Structure
 
-The following structure combines the project files identified during development. Some folders are optional or generated at runtime; keep only the entries that exist in your local repository.
+This tree reflects the files tracked in the repository. The ChromaDB database and the local `.env` file are generated or configured locally and are not committed.
 
 ```text
 Gen-AI-Examate/
@@ -98,47 +98,75 @@ Gen-AI-Examate/
 │   ├── __init__.py
 │   ├── main.py
 │   ├── records.py
+│   ├── models.py
 │   ├── cli.py
 │   ├── fetch.py
 │   ├── ingest.py
-│   ├── models.py
+│   ├── chunking.py
+│   ├── embed.py
+│   ├── semantic_search.py
 │   ├── smart_search.py
 │   ├── rag.py
 │   ├── graph.py
 │   ├── tools.py
+│   ├── vectorstore.py
 │   └── agent_loop.py
 │
 ├── data/
 │   ├── __init__.py
 │   ├── sample_records.py
 │   ├── records.json
-│   │
-│   └── rules/
-│       └── scheme_rules.json
+│   ├── chunks.json
+│   ├── rules/
+│   │   └── scheme_rules.json
+│   └── raw/
+│       ├── DBT_Farmer_User_Manual.pdf
+│       ├── Scheme-SubMissionOnFarmMechanization.pdf
+│       ├── extracted_text.txt
+│       └── farm_mechanization.html
 │
 ├── analysis/
+│   ├── __init__.py
 │   └── explore.py
 │
 ├── docs/
-│   └── how_llms_work.md
+│   ├── DAILY_PROGRESS.md
+│   ├── how_llms_work.md
+│   └── user_questions.md
 │
-├── tests/
-│   └── (additional tests, if present)
+├── eval/
+│   ├── results/
+│   │   ├── comparison.md
+│   │   └── rag_eval_results.json
+│   ├── eval_set.json
+│   ├── prompt_compare.md
+│   ├── results.json
+│   ├── run_eval.py
+│   ├── run_prompt_eval.py
+│   └── search_results.md
+│
+├── prompts/
+│   ├── eval_prompt_v1.txt
+│   ├── eval_prompt_v2.txt
+│   ├── system_prompt.txt
+│   ├── task_prompt_1.txt
+│   └── task_prompt_2.txt
 │
 ├── test_agent.py
+├── test_day9.py
 ├── test_eligibility.py
 ├── test_eligibility_graph.py
 ├── test_graph.py
 ├── test_missing_details.py
 ├── test_rejection.py
-├── test_day9.py
 │
 ├── day01_intro.py
 ├── day01_menu.py
 │
+├── sync_records.py
+├── .env.example
 ├── requirements.txt
 ├── .gitignore
-├── .env
 └── README.md
 ```
 
@@ -146,29 +174,22 @@ Gen-AI-Examate/
 
 | File / Folder | Purpose |
 |---|---|
-| `app/` | Main application source code |
-| `app/main.py` | FastAPI application and API endpoints |
-| `app/records.py` | Scheme record management |
-| `app/cli.py` | Command-line interface |
-| `app/fetch.py` | Data fetching functionality |
-| `app/ingest.py` | Data ingestion and processing |
-| `app/models.py` | Data models |
-| `app/smart_search.py` | Intelligent search functionality |
-| `app/rag.py` | Retrieval-Augmented Generation functionality |
-| `app/graph.py` | LangGraph workflow and agent orchestration |
-| `app/tools.py` | Eligibility and RAG tool execution |
-| `app/agent_loop.py` | Agent-loop implementation |
-| `data/` | Scheme datasets and related information |
-| `data/rules/` | Configured scheme eligibility rules |
-| `analysis/` | Data exploration and analysis |
-| `docs/` | Project documentation |
-| `test_*.py` | Individual workflow and functionality tests |
+| `app/` | FastAPI application, search/RAG modules, LangGraph workflow, and tools |
+| `data/records.json` | Structured scheme records |
+| `data/rules/` | Demonstration eligibility rule configuration |
+| `data/raw/` | Source documents used by ingestion and RAG |
+| `data/chroma_db/` | Locally generated ChromaDB database; not tracked |
+| `analysis/` | Data exploration scripts |
+| `docs/` | Project documentation and daily progress |
+| `eval/` | Evaluation data, scripts, and results |
+| `prompts/` | System, task, and evaluation prompts |
+| `test_*.py` | Root-level API, agent, and eligibility test scripts |
+| `.env.example` | Environment variable template; copy to a local `.env` |
 | `requirements.txt` | Python dependencies |
-| `.env` | Environment variables and API credentials |
-| `.gitignore` | Files excluded from Git |
+| `.gitignore` | Excludes local secrets, environments, and generated files |
 | `README.md` | Project documentation |
 
-**Note:** `.venv/`, `.env`, and generated vector database files should not be committed to GitHub. Add the appropriate entries to `.gitignore`.
+Keep `.env`, `.venv/`, and generated vector database files out of commits. Never put API keys in the repository.
 
 ---
 
