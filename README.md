@@ -680,23 +680,54 @@ The `POST /ask` endpoint was tested using Swagger UI.
 
 ## Day 9 – LangGraph Approval and Eligibility Tool
 
-**Objective:** Add approval-gated agent tool execution, an eligibility demonstration tool, and API/workflow coverage.
+**Objective:** Add an approval-gated LangGraph agent, verify eligibility tool behavior, and test the API endpoints.
 
-### Tasks Completed
+### Activities Completed
 
-1. Added LangGraph tool selection, approval interrupts, tool execution, and resume handling.
-2. Used the same `thread_id` for the initial request and its approval response.
-3. Identified that an approval resumed after an application restart has no `MemorySaver` checkpoint; the missing graph state previously surfaced as `KeyError('question')`.
-4. Added pending-approval checkpoint validation. A missing or expired checkpoint now returns HTTP 409 with a restart-aware explanation instead of the raw key error.
-5. Added validation that requests farmer details instead of calling the eligibility tool with missing or blank fields.
-6. Documented the eligibility rules as demonstration-only; they do not represent official government rules or decisions.
-7. Added tests for API routes, approval/rejection, thread resumption, eligibility outcomes, and missing details.
+1. Implemented LangGraph tool selection, approval interrupts, execution, and resume handling.
+2. Verified that a request pauses with `awaiting_approval`, resumes on approval, and stops with `rejected` on denial.
+3. Passed the same `thread_id` to the graph when resuming an approval.
+4. Reproduced the `KeyError('question')` when a resume was attempted after the in-memory checkpoint had been lost.
+5. Added pending-checkpoint validation so an expired or missing approval returns HTTP 409 with a clear message.
+6. Added handling for missing or blank farmer details, without treating boolean `false` as missing.
+7. Verified both eligible and ineligible demonstration inputs through the LangGraph eligibility tool.
+8. Tested the existing API endpoints and documented the workflow and limitations.
 
-### Testing Performed
+### Files Created or Modified
 
-- `python -m unittest test_day9 -v` — six focused tests covering the listed API and agent flows.
-- The `/chat` and `/ask` tests use mocked LLM/RAG responses; live Groq credentials are not required for this suite.
-- Semantic search is exercised with a deterministic test collection; live vector retrieval is separately available through the running application.
+- `app/graph.py`
+- `app/main.py`
+- `app/agent_loop.py`
+- `app/tools.py`
+- `data/rules/scheme_rules.json`
+- `requirements.txt`
+- `test_day9.py`
+- `README.md`
+- `docs/DAILY_PROGRESS.md`
+
+### Implementation Details
+
+**Tool Selection and Approval:** The graph selects the eligibility tool or RAG search, pauses for human approval, then resumes using the submitted approval value and original `thread_id`. A rejection ends the graph without running the selected tool.
+
+**Checkpoint Error Handling:** `MemorySaver` checkpoints are kept in process memory. If the application restarts before an approval is resumed, the saved question and pending interrupt are unavailable. The API now detects that condition and returns HTTP 409 rather than allowing a missing `question` to raise a `KeyError`.
+
+**Eligibility Tool:** The tool checks `land_holding`, `land_size_acres`, `caste_category`, `received_same_component_last_10_years`, and `already_has_tractor`. Missing or blank values return a request for the specific details. Rules in `data/rules/scheme_rules.json` are illustrative only; they are not official government criteria and do not provide an official eligibility decision.
+
+### Testing and Verification
+
+- `python -m unittest test_day9 -v` — **6 tests passed**.
+- `python -m compileall -q app test_day9.py` — passed.
+- `python test_eligibility.py` — eligible and ineligible demonstration examples returned the expected outcomes.
+- API coverage includes `/health`, `/records`, `/records/{id}`, `/search`, `/questions`, `/search/semantic`, `/chat`, `/ask`, and `/agent`.
+- The automated API suite uses mocked LLM/RAG responses and a deterministic semantic-search collection; it does not require a Groq API key or test live Groq generation.
+
+### Deliverables
+
+- Approval-gated LangGraph workflow with same-thread resume.
+- Clear rejection and expired-checkpoint responses.
+- Eligibility demonstration tool with missing-detail handling.
+- Day 9 API and graph workflow tests.
+- Updated project and daily progress documentation.
 
 **Status:** Completed
 

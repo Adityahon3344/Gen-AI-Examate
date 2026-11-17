@@ -509,7 +509,14 @@ def run_langgraph_agent(request: AgentRequest):
             return {
                 "thread_id": thread_id,
                 "status": result.get("status", "completed"),
-                "tools_used": result.get("tools_to_use", []),
+                "tools_used": (
+                    result.get("tools_to_use", [])
+                    if result.get("status", "completed") in [
+                        "completed",
+                        "needs_information"
+                    ]
+                    else []
+                ),
                 "results": result.get("results", {})
             }
 
@@ -546,7 +553,14 @@ def run_langgraph_agent(request: AgentRequest):
         return {
             "thread_id": thread_id,
             "status": result.get("status", "completed"),
-            "tools_used": result.get("tools_to_use", []),
+            "tools_used": (
+                    result.get("tools_to_use", [])
+                    if result.get("status", "completed") in [
+                        "completed",
+                        "needs_information"
+                    ]
+                    else []
+                ),
             "results": result.get("results", {})
         }
 
