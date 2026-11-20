@@ -1,13 +1,12 @@
 
-from typing import TypedDict, Any
+from typing import TypedDict
 
-from langgraph.graph import StateGraph, START, END
 from langgraph.checkpoint.memory import MemorySaver
+from langgraph.graph import END, START, StateGraph
 from langgraph.types import interrupt
 
 from app.rag import ask_question
 from app.tools import check_scheme_eligibility
-
 
 # --------------------------------------------------
 # 1. Agent State
@@ -129,10 +128,7 @@ def validate_farmer_details(farmer_details: dict):
 
         value = farmer_details.get(field)
 
-        if value is None:
-            missing_fields.append(field)
-
-        elif isinstance(value, str) and not value.strip():
+        if value is None or isinstance(value, str) and not value.strip():
             missing_fields.append(field)
 
     return missing_fields

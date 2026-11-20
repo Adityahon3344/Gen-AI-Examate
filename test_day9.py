@@ -1,10 +1,10 @@
 import unittest
 from unittest.mock import patch
 
-from fastapi.testclient import TestClient
 import numpy as np
+from fastapi.testclient import TestClient
 
-import app.main as main
+from app import main
 from app.agent_loop import run_agent
 from app.graph import build_graph
 

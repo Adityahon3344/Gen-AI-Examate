@@ -1,5 +1,6 @@
 import json
 from pathlib import Path
+
 from data.sample_records import SAMPLE_RECORDS
 
 output_file = Path("data/records.json")

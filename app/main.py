@@ -1,91 +1,50 @@
 
 import json
+import uuid
 from pathlib import Path
-from dataclasses import asdict
-from uuid import uuid4
 
 import chromadb
+from fastapi import FastAPI, HTTPException
+from langgraph.types import Command
+from pydantic import BaseModel, Field
 from sentence_transformers import SentenceTransformer
 
-from fastapi import FastAPI, HTTPException, Query
-from pydantic import BaseModel, Field
-
-from langgraph.types import Command
-
-from app.records import load_json_records
-from app.smart_search import smart_search
-from app.llm import generate_response
-from app.rag import ask_question
+from app.embed import MODEL_NAME
 from app.graph import build_graph
-
+from app.rag import ask_question
+from app.vectorstore import COLLECTION_NAME, DB_PATH
 
 # --------------------------------------------------
-# 1. Initialize FastAPI application
+# 1. FastAPI Application
 # --------------------------------------------------
 
 app = FastAPI(
     title="KrishiYojana API",
-    description="Maharashtra Farmer Scheme Eligibility and Benefits Assistant",
-    version="1.4.0"
+    description="AI-Powered Farmer Scheme Eligibility and Benefits Assistant",
+    version="1.0.0"
 )
 
 
 # --------------------------------------------------
-# 2. Project directories
+# 2. Paths and Runtime Objects
 # --------------------------------------------------
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-PROMPTS_DIR = BASE_DIR / "prompts"
+RECORDS_FILE = BASE_DIR / "data" / "records.json"
+VECTOR_DB_PATH = BASE_DIR / DB_PATH
+
+vector_collection = None
+embedding_model = None
+agent_graph = None
+initialization_error = None
 
 
 # --------------------------------------------------
-# 3. ChromaDB configuration
-# --------------------------------------------------
-
-DB_PATH = BASE_DIR / "data" / "chroma_db"
-COLLECTION_NAME = "krishiyojana_documents"
-
-chroma_client = chromadb.PersistentClient(
-    path=str(DB_PATH)
-)
-
-try:
-    vector_collection = chroma_client.get_collection(
-        name=COLLECTION_NAME
-    )
-except Exception:
-    vector_collection = None
-
-
-# --------------------------------------------------
-# 4. Load embedding model
-# --------------------------------------------------
-
-embedding_model = SentenceTransformer(
-    "sentence-transformers/all-MiniLM-L6-v2"
-)
-
-
-# --------------------------------------------------
-# 5. Initialize LangGraph
-# --------------------------------------------------
-
-agent_graph = build_graph(
-    vector_collection=vector_collection,
-    embedding_model=embedding_model
-)
-
-
-# --------------------------------------------------
-# 6. Request Models
+# 3. Request Models
 # --------------------------------------------------
 
 class QuestionRequest(BaseModel):
-    question: str = Field(
-        ...,
-        min_length=1,
-        description="Enter a farmer's agricultural scheme question"
-    )
+    question: str = Field(..., min_length=1)
 
 
 class AgentRequest(BaseModel):
@@ -96,322 +55,152 @@ class AgentRequest(BaseModel):
 
 
 # --------------------------------------------------
-# 7. Health Check API
+# 4. Initialize AI Components
+# --------------------------------------------------
+
+@app.on_event("startup")
+def initialize_ai():
+
+    global vector_collection
+    global embedding_model
+    global agent_graph
+    global initialization_error
+
+    try:
+        client = chromadb.PersistentClient(
+            path=str(VECTOR_DB_PATH)
+        )
+
+        vector_collection = client.get_collection(
+            name=COLLECTION_NAME
+        )
+
+        embedding_model = SentenceTransformer(
+            MODEL_NAME
+        )
+
+        agent_graph = build_graph(
+            vector_collection,
+            embedding_model
+        )
+
+        initialization_error = None
+        print("KrishiYojana AI components initialized.")
+
+    except Exception as error:
+        initialization_error = str(error)
+        print(f"AI initialization failed: {error}")
+
+
+# --------------------------------------------------
+# 5. Load Scheme Records
+# --------------------------------------------------
+
+def load_records():
+
+    try:
+        with open(RECORDS_FILE, "r", encoding="utf-8") as file:
+            records = json.load(file)
+
+        if not isinstance(records, list):
+            raise ValueError("Expected records.json to contain a list.")
+
+        return records
+
+    except FileNotFoundError:
+        raise HTTPException(
+            status_code=500,
+            detail="Scheme records file not found."
+        )
+
+    except (json.JSONDecodeError, ValueError) as error:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Invalid scheme records file: {error}"
+        )
+
+
+# --------------------------------------------------
+# 6. Find Scheme Document Requirements
+# --------------------------------------------------
+
+def get_scheme_documents(question: str):
+
+    records = load_records()
+    question_lower = question.casefold()
+
+    for record in records:
+
+        scheme_name = record.get("scheme_name", "")
+
+        if scheme_name and scheme_name.casefold() in question_lower:
+
+            documents = record.get("required_documents", [])
+
+            if not documents:
+                return None
+
+            document_list = "\n".join(
+                f"{index}. {document}"
+                for index, document in enumerate(documents, start=1)
+            )
+
+            return {
+                "question": question,
+                "answer": (
+                    f"Required documents for {scheme_name}:\n\n"
+                    f"{document_list}"
+                ),
+                "sources": [
+                    {
+                        "title": scheme_name,
+                        "source": "records.json",
+                        "page": "Not applicable",
+                        "url": record.get("source_url")
+                    }
+                ],
+                "confidence": "high"
+            }
+
+    return None
+
+
+# --------------------------------------------------
+# 7. Home Endpoint
+# --------------------------------------------------
+
+@app.get("/")
+def home():
+
+    return {
+        "message": "Welcome to KrishiYojana API",
+        "status": "running"
+    }
+
+
+# --------------------------------------------------
+# 8. Health Check
 # --------------------------------------------------
 
 @app.get("/health")
-def health_check():
-    """Check whether the KrishiYojana API is running."""
+def health():
 
     return {
-        "status": "success",
-        "message": "KrishiYojana API is running!"
+        "status": "healthy" if initialization_error is None else "degraded",
+        "application": "KrishiYojana",
+        "vector_database": vector_collection is not None,
+        "embedding_model": embedding_model is not None,
+        "agent": agent_graph is not None,
+        "initialization_error": initialization_error
     }
 
 
 # --------------------------------------------------
-# 8. Get All Records API
-# --------------------------------------------------
-
-@app.get("/records")
-def get_all_records(limit: int = Query(default=10, ge=1)):
-    """Retrieve agricultural scheme records."""
-
-    records = load_json_records()
-
-    return {
-        "total": len(records[:limit]),
-        "records": [
-            asdict(record) for record in records[:limit]
-        ]
-    }
-
-
-# --------------------------------------------------
-# 9. Get Record By ID API
-# --------------------------------------------------
-
-@app.get("/records/{record_id}")
-def get_record_by_id(record_id: int):
-    """Retrieve an agricultural scheme using its ID."""
-
-    records = load_json_records()
-
-    for record in records:
-        if record.id == record_id:
-            return asdict(record)
-
-    raise HTTPException(
-        status_code=404,
-        detail="Scheme not found"
-    )
-
-
-# --------------------------------------------------
-# 10. Smart Search API using TF-IDF
-# --------------------------------------------------
-
-@app.get("/search")
-def search_records(q: str = Query(..., min_length=1)):
-    """Search schemes using TF-IDF and cosine similarity."""
-
-    records = load_json_records()
-    results = smart_search(records, q, top_k=5)
-
-    return {
-        "query": q,
-        "total": len(results),
-        "results": [
-            asdict(record) for record in results
-        ]
-    }
-
-
-# --------------------------------------------------
-# 11. Farmer Questions API using Smart Search
-# --------------------------------------------------
-
-@app.post("/questions")
-def ask_farmer_question(request: QuestionRequest):
-    """Find relevant agricultural schemes for a farmer's question."""
-
-    question = request.question.strip()
-
-    if not question:
-        raise HTTPException(
-            status_code=400,
-            detail="Question cannot be empty"
-        )
-
-    records = load_json_records()
-    results = smart_search(records, question, top_k=5)
-
-    return {
-        "question": question,
-        "total": len(results),
-        "matching_schemes": [
-            asdict(record) for record in results
-        ],
-        "message": (
-            "Relevant schemes found."
-            if results
-            else "No matching schemes found."
-        )
-    }
-
-
-# --------------------------------------------------
-# 12. Semantic Search API using ChromaDB
-# --------------------------------------------------
-
-@app.get("/search/semantic")
-def semantic_search(
-    q: str = Query(..., min_length=1),
-    top_k: int = Query(default=3, ge=1, le=10)
-):
-    """Search document chunks using semantic similarity."""
-
-    if vector_collection is None:
-        raise HTTPException(
-            status_code=503,
-            detail="ChromaDB collection is not available. Run app.vectorstore first."
-        )
-
-    try:
-        total_chunks = vector_collection.count()
-
-        if total_chunks == 0:
-            return {
-                "query": q,
-                "total_results": 0,
-                "results": []
-            }
-
-        query_embedding = embedding_model.encode(
-            [q.strip()],
-            normalize_embeddings=True
-        )
-
-        results = vector_collection.query(
-            query_embeddings=query_embedding.tolist(),
-            n_results=min(top_k, total_chunks),
-            include=[
-                "documents",
-                "metadatas",
-                "distances"
-            ]
-        )
-
-        matches = []
-
-        for index in range(len(results["ids"][0])):
-            metadata = results["metadatas"][0][index]
-            distance = results["distances"][0][index]
-
-            matches.append({
-                "id": results["ids"][0][index],
-                "text": results["documents"][0][index],
-                "source": metadata.get("source"),
-                "page": (
-                    metadata.get("page")
-                    if metadata.get("page") != -1
-                    else None
-                ),
-                "title": metadata.get("title"),
-                "similarity_score": round(
-                    max(0.0, min(1.0, 1.0 - distance)),
-                    4
-                )
-            })
-
-        return {
-            "query": q,
-            "total_results": len(matches),
-            "results": matches
-        }
-
-    except HTTPException:
-        raise
-
-    except Exception as error:
-        raise HTTPException(
-            status_code=500,
-            detail=f"Semantic search failed: {str(error)}"
-        )
-
-
-# --------------------------------------------------
-# 13. Load Prompt Files
-# --------------------------------------------------
-
-def load_prompt(filename):
-    """Read a prompt file from the prompts directory."""
-
-    prompt_path = PROMPTS_DIR / filename
-
-    try:
-        return prompt_path.read_text(encoding="utf-8")
-
-    except OSError:
-        raise HTTPException(
-            status_code=500,
-            detail=f"Prompt file not found: {filename}"
-        )
-
-
-# --------------------------------------------------
-# 14. Chat API using Groq LLM and TF-IDF
-# --------------------------------------------------
-
-@app.post("/chat")
-def chat_with_farmer(request: QuestionRequest):
-    """Generate an AI answer using Groq and scheme records."""
-
-    question = request.question.strip()
-
-    if not question:
-        raise HTTPException(
-            status_code=400,
-            detail="Question cannot be empty"
-        )
-
-    system_prompt = load_prompt("system_prompt.txt")
-    task_prompt = load_prompt("task_prompt_1.txt")
-
-    records = load_json_records()
-    results = smart_search(records, question, top_k=5)
-
-    context = "\n\n".join(
-        f"Scheme: {record.scheme_name}\n"
-        f"Department: {record.department}\n"
-        f"Benefits: {record.benefit}\n"
-        f"Eligibility: {', '.join(record.eligibility)}\n"
-        f"Documents: {', '.join(record.required_documents)}"
-        for record in results
-    )
-
-    if not context:
-        context = "No matching scheme information was found."
-
-    user_prompt = task_prompt.format(
-        question=question,
-        context=context
-    )
-
-    json_instruction = """
-Return only valid JSON without Markdown code blocks.
-
-Use exactly this structure:
-{
-    "answer": "Answer for the farmer",
-    "confidence": 0.0,
-    "follow_up": "A relevant follow-up question or null"
-}
-
-Rules:
-- Confidence must be a number between 0 and 1.
-- Do not invent scheme information.
-- Use only the provided scheme context.
-- If no relevant information exists, clearly state that.
-- Use null for follow_up if no follow-up is needed.
-"""
-
-    try:
-        ai_response = generate_response(
-            user_prompt + "\n\n" + json_instruction,
-            system_prompt
-        )
-
-        result = json.loads(ai_response)
-
-        answer = result.get("answer")
-        confidence = result.get("confidence")
-        follow_up = result.get("follow_up")
-
-        if (
-            not isinstance(answer, str)
-            or isinstance(confidence, bool)
-            or not isinstance(confidence, (int, float))
-            or not 0 <= confidence <= 1
-            or not (
-                follow_up is None
-                or isinstance(follow_up, str)
-            )
-        ):
-            raise ValueError("Invalid JSON response structure")
-
-        return {
-            "answer": answer,
-            "confidence": float(confidence),
-            "follow_up": follow_up
-        }
-
-    except json.JSONDecodeError:
-        raise HTTPException(
-            status_code=502,
-            detail="Groq returned an invalid JSON response"
-        )
-
-    except HTTPException:
-        raise
-
-    except Exception:
-        raise HTTPException(
-            status_code=502,
-            detail="Unable to generate a response from the AI service"
-        )
-
-
-# --------------------------------------------------
-# 15. RAG API using ChromaDB and Groq
+# 9. Ask Endpoint: Records + RAG
 # --------------------------------------------------
 
 @app.post("/ask")
-def ask_with_rag(request: QuestionRequest):
-    """
-    Answer farmer questions using retrieved document chunks,
-    Groq LLM, and source citations.
-    """
+def ask(request: QuestionRequest):
 
     question = request.question.strip()
 
@@ -421,47 +210,48 @@ def ask_with_rag(request: QuestionRequest):
             detail="Question cannot be empty."
         )
 
-    if vector_collection is None:
+    # First, check structured scheme records.
+    document_answer = get_scheme_documents(question)
+
+    if document_answer:
+        return document_answer
+
+    # Otherwise, use RAG.
+    if vector_collection is None or embedding_model is None:
         raise HTTPException(
             status_code=503,
-            detail="ChromaDB collection is not available."
+            detail=f"RAG is not ready. {initialization_error or ''}"
         )
 
     try:
-        result = ask_question(
+        return ask_question(
             question=question,
             vector_collection=vector_collection,
             embedding_model=embedding_model,
             top_k=3
         )
 
-        return result
-
-    except ValueError as error:
+    except Exception as error:
         raise HTTPException(
-            status_code=400,
-            detail=str(error)
-        )
-
-    except Exception:
-        raise HTTPException(
-            status_code=502,
-            detail="Unable to generate a RAG response."
+            status_code=500,
+            detail=f"Unable to generate an answer: {error}"
         )
 
 
 # --------------------------------------------------
-# 16. LangGraph Agent API with Human Approval
+# 10. LangGraph Agent Endpoint
 # --------------------------------------------------
 
 @app.post("/agent")
-def run_langgraph_agent(request: AgentRequest):
-    """
-    Execute the LangGraph agent with human approval
-    and conversation memory.
-    """
+def run_agent(request: AgentRequest):
 
-    thread_id = request.thread_id or str(uuid4())
+    if agent_graph is None:
+        raise HTTPException(
+            status_code=503,
+            detail=f"Agent is not ready. {initialization_error or ''}"
+        )
+
+    thread_id = request.thread_id or str(uuid.uuid4())
 
     config = {
         "configurable": {
@@ -471,96 +261,57 @@ def run_langgraph_agent(request: AgentRequest):
 
     try:
 
-        # ------------------------------------------
-        # Initial request: Start the graph
-        # ------------------------------------------
-
-        if request.approval is None:
-
-            question = (request.question or "").strip()
-
-            if not question:
-                raise HTTPException(
-                    status_code=400,
-                    detail="Question is required for a new conversation."
-                )
-
-            initial_state = {
-                "question": question,
-                "farmer_details": request.farmer_details or {}
-            }
+        # Resume an interrupted workflow after approval/rejection.
+        if request.approval is not None:
 
             result = agent_graph.invoke(
-                initial_state,
+                Command(
+                    resume={
+                        "approved": request.approval
+                    }
+                ),
                 config=config
             )
 
-            interrupts = result.get("__interrupt__", [])
+        else:
 
-            if interrupts:
-                approval_request = interrupts[0].value
+            if not request.question or not request.question.strip():
+                raise HTTPException(
+                    status_code=400,
+                    detail="A question is required to start the agent."
+                )
 
-                return {
-                    "thread_id": thread_id,
-                    "status": "awaiting_approval",
-                    "approval_request": approval_request
-                }
+            result = agent_graph.invoke(
+                {
+                    "question": request.question.strip(),
+                    "farmer_details": request.farmer_details or {}
+                },
+                config=config
+            )
+
+        # LangGraph pauses here when human approval is required.
+        interruptions = result.get("__interrupt__", [])
+
+        if interruptions:
+
+            interrupt_data = [
+                item.value
+                for item in interruptions
+            ]
 
             return {
+                "status": "approval_required",
                 "thread_id": thread_id,
-                "status": result.get("status", "completed"),
-                "tools_used": (
-                    result.get("tools_to_use", [])
-                    if result.get("status", "completed") in [
-                        "completed",
-                        "needs_information"
-                    ]
-                    else []
-                ),
-                "results": result.get("results", {})
+                "approval_request": interrupt_data,
+                "message": "Please approve or reject the selected tool."
             }
 
-        # ------------------------------------------
-        # Approval request: Resume the graph
-        # ------------------------------------------
-
-        if not request.thread_id:
-            raise HTTPException(
-                status_code=400,
-                detail="thread_id is required to submit approval."
-            )
-
-        checkpoint = agent_graph.get_state(config)
-        has_pending_approval = any(
-            task.name == "approval" and task.interrupts
-            for task in checkpoint.tasks
-        )
-        if not has_pending_approval:
-            raise HTTPException(
-                status_code=409,
-                detail=(
-                    "No pending approval was found for this thread_id. "
-                    "In-memory checkpoints are lost when the application "
-                    "restarts; start a new agent request."
-                )
-            )
-
-        result = agent_graph.invoke(
-            Command(resume=request.approval),
-            config=config
-        )
-
         return {
-            "thread_id": thread_id,
             "status": result.get("status", "completed"),
-            "tools_used": (
-                    result.get("tools_to_use", [])
-                    if result.get("status", "completed") in [
-                        "completed",
-                        "needs_information"
-                    ]
-                    else []
-                ),
+            "thread_id": thread_id,
+            "question": result.get("question"),
+            "tools_to_use": result.get("tools_to_use", []),
+            "approved": result.get("approved"),
             "results": result.get("results", {})
         }
 
@@ -570,5 +321,65 @@ def run_langgraph_agent(request: AgentRequest):
     except Exception as error:
         raise HTTPException(
             status_code=500,
-            detail=f"Agent execution failed: {str(error)}"
+            detail=f"Agent execution failed: {error}"
         )
+
+
+# --------------------------------------------------
+# 11. Get All Scheme Records
+# --------------------------------------------------
+
+@app.get("/records")
+def get_records():
+
+    return load_records()
+
+
+# --------------------------------------------------
+# 12. Get Individual Scheme
+# --------------------------------------------------
+
+@app.get("/records/{record_id}")
+def get_record(record_id: str):
+
+    records = load_records()
+
+    for record in records:
+
+        if str(record.get("id")) == record_id:
+            return record
+
+    raise HTTPException(
+        status_code=404,
+        detail="Scheme record not found."
+    )
+
+
+# --------------------------------------------------
+# 13. Search Scheme Records
+# --------------------------------------------------
+
+@app.get("/search")
+def search_schemes(query: str):
+
+    query_lower = query.strip().casefold()
+
+    if not query_lower:
+        raise HTTPException(
+            status_code=400,
+            detail="Search query cannot be empty."
+        )
+
+    records = load_records()
+
+    results = [
+        record
+        for record in records
+        if query_lower in record.get("scheme_name", "").casefold()
+    ]
+
+    return {
+        "query": query,
+        "total_results": len(results),
+        "results": results
+    }

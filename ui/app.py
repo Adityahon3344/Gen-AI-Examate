@@ -1,11 +1,10 @@
-
-import streamlit as st
-import requests
 import json
-
-from pathlib import Path
+import os
 from datetime import datetime
+from pathlib import Path
 
+import requests
+import streamlit as st
 
 # --------------------------------------------------
 # 1. Page Configuration
@@ -16,7 +15,7 @@ st.set_page_config(
     layout="wide"
 )
 
-API_URL = "http://127.0.0.1:8000"
+API_URL = os.getenv("API_URL", "http://127.0.0.1:8000")
 
 BASE_DIR = Path(__file__).resolve().parents[1]
 RECORDS_FILE = BASE_DIR / "data" / "records.json"

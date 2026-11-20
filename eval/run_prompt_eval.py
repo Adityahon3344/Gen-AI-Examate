@@ -1,15 +1,15 @@
 
-import sys
 import json
+import sys
 from pathlib import Path
 
 # Add project root to Python import path
 BASE_DIR = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(BASE_DIR))
 
+from app.llm import generate_response
 from app.records import load_json_records
 from app.smart_search import smart_search
-from app.llm import generate_response
 
 PROMPTS_DIR = BASE_DIR / "prompts"
 QUESTIONS_FILE = BASE_DIR / "docs" / "user_questions.md"
