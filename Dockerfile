@@ -20,6 +20,9 @@ COPY app/ ./app/
 COPY ui/ ./ui/
 COPY data/ ./data/
 
+# Build the vector index from the tracked, pre-embedded chunks.
+RUN python -m app.vectorstore
+
 # Expose API and Streamlit ports
 EXPOSE 8000 8501
 

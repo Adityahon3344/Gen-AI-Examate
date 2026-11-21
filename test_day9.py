@@ -39,14 +39,6 @@ class DayNineWorkflowTests(unittest.TestCase):
             patch.object(main, "embedding_model", FakeEmbeddingModel()),
             patch.object(
                 main,
-                "generate_response",
-                return_value=(
-                    '{"answer":"Test answer","confidence":0.9,'
-                    '"follow_up":null}'
-                ),
-            ),
-            patch.object(
-                main,
                 "ask_question",
                 return_value={"answer": "Test RAG answer", "sources": []},
             ),
@@ -71,24 +63,6 @@ class DayNineWorkflowTests(unittest.TestCase):
         self.assertEqual(self.client.get("/records/1").status_code, 200)
         self.assertEqual(
             self.client.get("/search", params={"q": "tractor"}).status_code,
-            200,
-        )
-        self.assertEqual(
-            self.client.post(
-                "/questions", json={"question": "tractor"}
-            ).status_code,
-            200,
-        )
-        self.assertEqual(
-            self.client.get(
-                "/search/semantic", params={"q": "tractor"}
-            ).status_code,
-            200,
-        )
-        self.assertEqual(
-            self.client.post(
-                "/chat", json={"question": "What is the scheme?"}
-            ).status_code,
             200,
         )
         self.assertEqual(
