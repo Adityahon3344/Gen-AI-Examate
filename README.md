@@ -1,4 +1,7 @@
 KrishiYojana – AI-Powered Farmer Scheme Eligibility & Benefits Assistant
+
+[![KrishiYojana CI](https://github.com/Adityahon3344/Gen-AI-Examate/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/Adityahon3344/Gen-AI-Examate/actions/workflows/ci.yml)
+
 An AI-powered assistant that helps farmers in Maharashtra discover government agricultural schemes, understand scheme benefits, search agricultural information, and check eligibility through an intelligent conversational interface.
 
 Project: KrishiYojana
@@ -492,18 +495,31 @@ uvicorn app.main:app --reload
 Step 8: Open API Documentation
 http://127.0.0.1:8000/docs
 
+### Run with Docker
+
+1. Copy `.env.example` to `.env` and set `GROQ_API_KEY` for LLM-backed answers.
+2. Build and start the API and Streamlit UI:
+
+   ```bash
+   docker compose up --build
+   ```
+
+3. Open the Streamlit UI at http://localhost:8501. The API is available at
+   http://localhost:8002, with its health endpoint at
+   http://localhost:8002/health and API documentation at
+   http://localhost:8002/docs.
+4. Stop the services with `Ctrl+C`, then run `docker compose down` to remove the
+   containers. ChromaDB data is persisted under `data/chroma_db`.
+
 11. Testing
-Run the complete Day 9 automated test suite:
-python -m unittest test_day9 -v
-Run individual tests:
-python test_agent.py
-python test_eligibility.py
-python test_eligibility_graph.py
-python test_graph.py
-python test_missing_details.py
-python test_rejection.py
-Check Python compilation:
-python -m compileall -q app test_day9.py
+Run the same checks used by GitHub Actions:
+
+```bash
+python -m ruff check .
+python -m pytest tests/ -v
+docker build -t krishiyojana:ci .
+```
+
 12. Human Approval Workflow
 The agent uses a human-in-the-loop approach to control tool execution.
 
