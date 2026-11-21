@@ -1,11 +1,11 @@
 
+from app.embeddings import generate_query_embedding
 from app.llm import generate_response
 
 
 def ask_question(
     question: str,
     vector_collection,
-    embedding_model,
     top_k: int = 3
 ):
     """
@@ -18,11 +18,8 @@ def ask_question(
     if not question:
         raise ValueError("Question cannot be empty.")
 
-    # 1. Generate question embedding
-    query_embedding = embedding_model.encode(
-        [question],
-        normalize_embeddings=True
-    )
+    # 1. Generate question embedding using FastEmbed
+    query_embedding = generate_query_embedding(question)
 
     # 2. Retrieve relevant chunks from ChromaDB
     total_chunks = vector_collection.count()
@@ -36,7 +33,7 @@ def ask_question(
         }
 
     results = vector_collection.query(
-        query_embeddings=query_embedding.tolist(),
+        query_embeddings=[query_embedding],
         n_results=min(top_k, total_chunks),
         include=["documents", "metadatas", "distances"]
     )

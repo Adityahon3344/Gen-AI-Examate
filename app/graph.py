@@ -8,9 +8,7 @@ from langgraph.types import interrupt
 from app.rag import ask_question
 from app.tools import check_scheme_eligibility
 
-# --------------------------------------------------
 # 1. Agent State
-# --------------------------------------------------
 
 class AgentState(TypedDict, total=False):
     question: str
@@ -21,9 +19,7 @@ class AgentState(TypedDict, total=False):
     status: str
 
 
-# --------------------------------------------------
 # 2. Required Farmer Details
-# --------------------------------------------------
 
 REQUIRED_FARMER_FIELDS = [
     "land_holding",
@@ -34,9 +30,7 @@ REQUIRED_FARMER_FIELDS = [
 ]
 
 
-# --------------------------------------------------
 # 3. Tool Selection Node
-# --------------------------------------------------
 
 def select_tools(state: AgentState):
     """Select the appropriate tool based on the question."""
@@ -67,14 +61,10 @@ def select_tools(state: AgentState):
     else:
         tools = ["rag_search"]
 
-    return {
-        "tools_to_use": tools
-    }
+    return {"tools_to_use": tools}
 
 
-# --------------------------------------------------
 # 4. Human Approval Node
-# --------------------------------------------------
 
 def approval_node(state: AgentState):
     """Pause execution and request human approval."""
@@ -99,9 +89,7 @@ def approval_node(state: AgentState):
     }
 
 
-# --------------------------------------------------
 # 5. Approval Router
-# --------------------------------------------------
 
 def approval_router(state: AgentState):
     """Execute tools only after approval."""
@@ -112,9 +100,7 @@ def approval_router(state: AgentState):
     return END
 
 
-# --------------------------------------------------
 # 6. Validate Farmer Details
-# --------------------------------------------------
 
 def validate_farmer_details(farmer_details: dict):
     """Identify missing farmer information."""
@@ -125,32 +111,27 @@ def validate_farmer_details(farmer_details: dict):
     missing_fields = []
 
     for field in REQUIRED_FARMER_FIELDS:
-
         value = farmer_details.get(field)
 
-        if value is None or isinstance(value, str) and not value.strip():
+        if value is None or (
+            isinstance(value, str) and not value.strip()
+        ):
             missing_fields.append(field)
 
     return missing_fields
 
 
-# --------------------------------------------------
 # 7. Tool Execution Node
-# --------------------------------------------------
 
-def execute_tools(state: AgentState, vector_collection, embedding_model):
+def execute_tools(state: AgentState, vector_collection):
     """Execute the approved tool."""
 
     results = {}
-
     selected_tools = state.get("tools_to_use", [])
 
     for tool in selected_tools:
 
-        # ------------------------------------------
         # Eligibility Tool
-        # ------------------------------------------
-
         if tool == "eligibility":
 
             farmer_details = state.get("farmer_details") or {}
@@ -160,7 +141,6 @@ def execute_tools(state: AgentState, vector_collection, embedding_model):
             )
 
             if missing_fields:
-
                 results["eligibility"] = {
                     "status": "needs_information",
                     "missing_fields": missing_fields,
@@ -171,7 +151,6 @@ def execute_tools(state: AgentState, vector_collection, embedding_model):
                 }
 
             else:
-
                 eligibility_details = {
                     field: farmer_details[field]
                     for field in REQUIRED_FARMER_FIELDS
@@ -181,10 +160,7 @@ def execute_tools(state: AgentState, vector_collection, embedding_model):
                     **eligibility_details
                 )
 
-        # ------------------------------------------
         # RAG Search Tool
-        # ------------------------------------------
-
         elif tool == "rag_search":
 
             if vector_collection is None:
@@ -195,16 +171,11 @@ def execute_tools(state: AgentState, vector_collection, embedding_model):
             results["rag_search"] = ask_question(
                 question=state["question"],
                 vector_collection=vector_collection,
-                embedding_model=embedding_model,
                 top_k=3
             )
 
         else:
             raise ValueError(f"Unknown tool selected: {tool}")
-
-    # ------------------------------------------
-    # Final Execution Status
-    # ------------------------------------------
 
     needs_information = any(
         isinstance(result, dict)
@@ -222,43 +193,26 @@ def execute_tools(state: AgentState, vector_collection, embedding_model):
     }
 
 
-# --------------------------------------------------
 # 8. Build LangGraph Workflow
-# --------------------------------------------------
 
-def build_graph(vector_collection, embedding_model):
+def build_graph(vector_collection):
     """Build and compile the LangGraph agent."""
 
     workflow = StateGraph(AgentState)
 
-    # Register nodes
-
     workflow.add_node("select_tools", select_tools)
-
     workflow.add_node("approval", approval_node)
 
     workflow.add_node(
         "execute_tools",
         lambda state: execute_tools(
             state,
-            vector_collection,
-            embedding_model
+            vector_collection
         )
     )
 
-    # Define workflow
-
-    workflow.add_edge(
-        START,
-        "select_tools"
-    )
-
-    workflow.add_edge(
-        "select_tools",
-        "approval"
-    )
-
-    # Route according to approval
+    workflow.add_edge(START, "select_tools")
+    workflow.add_edge("select_tools", "approval")
 
     workflow.add_conditional_edges(
         "approval",
@@ -269,16 +223,9 @@ def build_graph(vector_collection, embedding_model):
         }
     )
 
-    workflow.add_edge(
-        "execute_tools",
-        END
-    )
-
-    # In-memory checkpoint storage
+    workflow.add_edge("execute_tools", END)
 
     memory = MemorySaver()
-
-    # Compile graph
 
     graph = workflow.compile(
         checkpointer=memory

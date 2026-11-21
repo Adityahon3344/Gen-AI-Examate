@@ -1,5 +1,5 @@
 from app.agent_loop import run_agent
-from app.main import embedding_model, vector_collection
+from app.main import vector_collection
 
 # Test 1: Eligibility tool
 farmer_details = {
@@ -13,7 +13,6 @@ farmer_details = {
 result = run_agent(
     question="Am I eligible for the farm mechanization scheme?",
     vector_collection=vector_collection,
-    embedding_model=embedding_model,
     farmer_details=farmer_details
 )
 
@@ -24,8 +23,7 @@ print(result)
 # Test 2: RAG search tool
 result = run_agent(
     question="What are the benefits of farm mechanization?",
-    vector_collection=vector_collection,
-    embedding_model=embedding_model
+    vector_collection=vector_collection
 )
 
 print("\nTEST 2 - RAG Agent")

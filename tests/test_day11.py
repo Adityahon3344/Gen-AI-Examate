@@ -73,7 +73,6 @@ def test_search_endpoint(client):
 def test_ask_with_fake_llm(client, monkeypatch):
     monkeypatch.setattr(main, "get_scheme_documents", lambda question: None)
     monkeypatch.setattr(main, "vector_collection", object())
-    monkeypatch.setattr(main, "embedding_model", object())
 
     def fake_ask_question(**kwargs):
         return {

@@ -232,7 +232,6 @@ def run_configuration(config, questions, embedding_model):
             response = ask_question(
                 question=question,
                 vector_collection=collection,
-                embedding_model=embedding_model,
                 top_k=config["top_k"]
             )
 

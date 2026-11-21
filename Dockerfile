@@ -3,28 +3,25 @@ FROM python:3.13-slim
 
 WORKDIR /app
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
-    && rm -rf /var/lib/apt/lists/*
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    OMP_NUM_THREADS=1 \
+    MKL_NUM_THREADS=1 \
+    OPENBLAS_NUM_THREADS=1 \
+    TOKENIZERS_PARALLELISM=false \
+    WEB_CONCURRENCY=1
 
-# Copy dependency file
-COPY requirements.txt .
+COPY requirements-runtime.txt .
 
-# Install Python dependencies
 RUN pip install --no-cache-dir --upgrade pip \
-    && pip install --no-cache-dir -r requirements.txt
+    && pip install --no-cache-dir -r requirements-runtime.txt
 
-# Copy project files
 COPY app/ ./app/
 COPY ui/ ./ui/
 COPY data/ ./data/
 
-# Build the vector index from the tracked, pre-embedded chunks.
 RUN python -m app.vectorstore
 
-# Expose API and Streamlit ports
-EXPOSE 8000 8501
+EXPOSE 8000
 
-# Default command starts the API
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000} --workers 1"]
