@@ -53,3 +53,23 @@ The Day 9 eligibility implementation also uses `app/tools.py` and `data/rules/sc
 - Live Groq-backed generation was not exercised by the automated API tests.
 
 **Status:** Completed
+
+## Day 12 – FastEmbed Runtime and Render Deployment
+
+**Date:** 21 November 2026
+
+### Deployment
+
+- **Backend:** https://gen-ai-examate.onrender.com
+- **API documentation:** https://gen-ai-examate.onrender.com/docs
+- **Agent API:** `POST https://gen-ai-examate.onrender.com/agent`
+
+### Public Endpoint Verification
+
+- `GET /health` — HTTP 200; status `healthy`; ChromaDB available.
+- `GET /docs` — HTTP 200.
+- `GET /records` — HTTP 200.
+- At the time of the health check, the embedding model and agent were not yet initialized; both load lazily when used.
+- A separate public Streamlit UI URL has not been confirmed.
+
+**Status:** Backend deployed and public API endpoints verified; public UI URL still needs confirmation.
