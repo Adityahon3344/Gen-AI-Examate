@@ -1,6 +1,7 @@
 
-import requests
 from pathlib import Path
+
+import requests
 
 RAW_DIR = Path("data/raw")
 RAW_DIR.mkdir(parents=True, exist_ok=True)

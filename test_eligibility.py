@@ -1,6 +1,5 @@
 from app.tools import check_scheme_eligibility
 
-
 # Test 1: All demonstration rules pass
 result1 = check_scheme_eligibility(
     land_holding="7/12 holder",

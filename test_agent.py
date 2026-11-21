@@ -1,6 +1,5 @@
-from app.main import vector_collection, embedding_model
 from app.agent_loop import run_agent
-
+from app.main import embedding_model, vector_collection
 
 # Test 1: Eligibility tool
 farmer_details = {

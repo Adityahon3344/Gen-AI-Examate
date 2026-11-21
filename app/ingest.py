@@ -1,5 +1,6 @@
 
 from pathlib import Path
+
 from bs4 import BeautifulSoup
 from pypdf import PdfReader
 

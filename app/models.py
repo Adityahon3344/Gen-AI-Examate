@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from typing import List
 
 
 @dataclass
@@ -8,6 +7,6 @@ class Record:
     scheme_name: str
     department: str
     benefit: str
-    eligibility: List[str]
-    required_documents: List[str]
+    eligibility: list[str]
+    required_documents: list[str]
     source_url: str

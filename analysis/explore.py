@@ -1,7 +1,7 @@
 
 import pandas as pd
-from app.records import load_json_records
 
+from app.records import load_json_records
 
 # Load records
 records = load_json_records()

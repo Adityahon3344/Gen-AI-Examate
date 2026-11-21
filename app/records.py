@@ -2,8 +2,8 @@
 import json
 from pathlib import Path
 
-from data.sample_records import SAMPLE_RECORDS
 from app.models import Record
+from data.sample_records import SAMPLE_RECORDS
 
 JSON_FILE = Path("data/records.json")
 

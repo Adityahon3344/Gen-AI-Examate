@@ -1,19 +1,16 @@
-
 # Python cache
 __pycache__/
+**/__pycache__/
 *.py[cod]
+# Protect environment files in every folder
+**/.env
+**/.env.*
+!**/.env.example
 
-# Virtual environment
-.venv/
-env/
+# Generated vector databases
+**/chroma_db/
 
-# Environment variables
-.env
-.env.*
-!.env.example
-
-# ChromaDB generated database
-data/chroma_db/
-
-# macOS
-.DS_Store
+# Python cache files
+__pycache__/
+**/__pycache__/
+*.py[cod]
