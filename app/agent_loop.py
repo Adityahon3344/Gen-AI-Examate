@@ -5,7 +5,6 @@ from app.tools import check_scheme_eligibility
 def run_agent(
     question,
     vector_collection,
-    embedding_model,
     farmer_details=None
 ):
     """
@@ -128,7 +127,6 @@ def run_agent(
             rag_result = ask_question(
                 question=question,
                 vector_collection=vector_collection,
-                embedding_model=embedding_model,
                 top_k=3
             )
 

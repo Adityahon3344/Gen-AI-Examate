@@ -9,7 +9,7 @@ from fastapi import FastAPI, HTTPException
 from langgraph.types import Command
 from pydantic import BaseModel, Field
 
-from app.embed import MODEL_NAME
+from app.embeddings import is_embedding_model_loaded
 from app.graph import build_graph
 from app.rag import ask_question
 from app.vectorstore import COLLECTION_NAME, DB_PATH
@@ -33,11 +33,9 @@ RECORDS_FILE = BASE_DIR / "data" / "records.json"
 VECTOR_DB_PATH = BASE_DIR / DB_PATH
 
 vector_collection = None
-embedding_model = None
 agent_graph = None
 
 initialization_error = None
-embedding_error = None
 
 ai_lock = threading.RLock()
 ai_initialization_attempted = False
@@ -89,51 +87,6 @@ def initialize_vector_database():
 
 
 # --------------------------------------------------
-# 5. Load Embedding Model Only When Required
-# --------------------------------------------------
-
-
-def get_embedding_model():
-    global embedding_model
-    global embedding_error
-
-    if embedding_model is not None:
-        return embedding_model
-
-    with ai_lock:
-        if embedding_model is not None:
-            return embedding_model
-
-        try:
-            import torch
-            from sentence_transformers import SentenceTransformer
-
-            # Limit CPU threads to reduce resource usage.
-            torch.set_num_threads(1)
-
-            print("Loading embedding model:", MODEL_NAME)
-
-            embedding_model = SentenceTransformer(
-                MODEL_NAME,
-                device="cpu",
-            )
-
-            embedding_error = None
-            print("Embedding model loaded successfully.")
-
-            return embedding_model
-
-        except Exception as error:
-            embedding_error = str(error)
-            print("Embedding model loading failed:", error)
-
-            raise HTTPException(
-                status_code=503,
-                detail="Embedding model is currently unavailable.",
-            ) from error
-
-
-# --------------------------------------------------
 # 6. Initialize AI Agent When Required
 # --------------------------------------------------
 
@@ -155,12 +108,7 @@ def get_agent_graph():
             )
 
         try:
-            model = get_embedding_model()
-
-            agent_graph = build_graph(
-                vector_collection,
-                model,
-            )
+            agent_graph = build_graph(vector_collection)
 
             print("LangGraph agent initialized.")
 
@@ -301,9 +249,8 @@ def health():
         ),
         "application": "KrishiYojana",
         "vector_database": database_ready,
-        "embedding_model": embedding_model is not None,
+        "embedding_model": is_embedding_model_loaded(),
         "agent": agent_graph is not None,
-        "embedding_error": embedding_error,
         "initialization_error": initialization_error,
     }
 
@@ -337,12 +284,9 @@ def ask(request: QuestionRequest):
         )
 
     try:
-        model = get_embedding_model()
-
         return ask_question(
             question=question,
             vector_collection=vector_collection,
-            embedding_model=model,
             top_k=3,
         )
 

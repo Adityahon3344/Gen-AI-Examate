@@ -1,20 +1,11 @@
 import unittest
 from unittest.mock import patch
 
-import numpy as np
 from fastapi.testclient import TestClient
 
 from app import main
 from app.agent_loop import run_agent
 from app.graph import build_graph
-
-
-class FakeEmbeddingModel:
-    def encode(self, questions, normalize_embeddings=True):
-        embeddings = np.ones((len(questions), 2), dtype=float)
-        if normalize_embeddings:
-            embeddings /= np.linalg.norm(embeddings, axis=1, keepdims=True)
-        return embeddings
 
 
 class FakeVectorCollection:
@@ -36,13 +27,12 @@ class DayNineWorkflowTests(unittest.TestCase):
     def setUp(self):
         patches = (
             patch.object(main, "vector_collection", FakeVectorCollection()),
-            patch.object(main, "embedding_model", FakeEmbeddingModel()),
             patch.object(
                 main,
                 "ask_question",
                 return_value={"answer": "Test RAG answer", "sources": []},
             ),
-            patch.object(main, "agent_graph", build_graph(None, None)),
+            patch.object(main, "agent_graph", build_graph(None)),
             patch(
                 "app.graph.ask_question",
                 return_value={"answer": "Test graph answer", "sources": []},
@@ -173,7 +163,6 @@ class DayNineWorkflowTests(unittest.TestCase):
         result = run_agent(
             question="Am I eligible?",
             vector_collection=None,
-            embedding_model=None,
         )
         eligibility = result["results"]["eligibility"]
         self.assertEqual(eligibility["status"], "needs_information")

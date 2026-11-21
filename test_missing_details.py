@@ -2,11 +2,10 @@
 from langgraph.types import Command
 
 from app.graph import build_graph
-from app.main import embedding_model, vector_collection
+from app.main import vector_collection
 
 graph = build_graph(
-    vector_collection=vector_collection,
-    embedding_model=embedding_model
+    vector_collection=vector_collection
 )
 
 config = {

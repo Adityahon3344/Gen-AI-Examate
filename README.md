@@ -63,7 +63,7 @@ LLM Provider	Groq
 Agent Framework	LangGraph
 RAG Architecture	Retrieval-Augmented Generation
 Embedding Model	all-MiniLM-L6-v2
-Embedding Library	SentenceTransformers
+Embedding Library	FastEmbed (runtime); SentenceTransformers (offline tools)
 Vector Database	ChromaDB
 Data Processing	Pandas
 API Server	Uvicorn
@@ -147,6 +147,7 @@ Gen-AI-Examate/
 ├── sync_records.py
 ├── .env.example
 ├── requirements.txt
+├── requirements-runtime.txt
 ├── .gitignore
 └── README.md
 
@@ -164,6 +165,7 @@ prompts/	System, task, and evaluation prompts
 test_*.py	Root-level API, agent, and eligibility test scripts
 .env.example	Environment variable template; copy to a local .env
 requirements.txt	Python dependencies
+requirements-runtime.txt	Dependencies for the Docker API and UI image
 .gitignore	Excludes local secrets, environments, and generated files
 README.md	Project documentation
 
@@ -568,4 +570,4 @@ The project progresses from basic Python programming and structured data managem
 The overall goal is to build a reliable, transparent, and user-friendly AI assistant that helps Maharashtra farmers understand government agricultural schemes.
 Project: KrishiYojana – AI-Powered Farmer Scheme Eligibility & Benefits Assistant
 Repository: Adityahon3344/Gen-AI-Examate
-Primary Technologies: Python, FastAPI, Groq, LangGraph, ChromaDB, SentenceTransformers
+Primary Technologies: Python, FastAPI, Groq, LangGraph, ChromaDB, FastEmbed
