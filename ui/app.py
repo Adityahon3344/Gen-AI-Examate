@@ -16,6 +16,9 @@ st.set_page_config(
 )
 
 API_URL = os.getenv("API_URL", "http://127.0.0.1:8000")
+if "://" not in API_URL:
+    API_URL = f"http://{API_URL}"
+API_URL = API_URL.rstrip("/")
 
 BASE_DIR = Path(__file__).resolve().parents[1]
 RECORDS_FILE = BASE_DIR / "data" / "records.json"
@@ -319,7 +322,7 @@ with chat_tab:
                         )
 
                         st.session_state.agent_approval_pending = (
-                            agent_response.get("status") == "approval_required"
+                            agent_response.get("status") == "awaiting_approval"
                         )
 
                         st.session_state.agent_approval_request = (

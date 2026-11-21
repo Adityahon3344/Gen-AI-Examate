@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: krishiyojana-api
+    runtime: docker
+    plan: free
+    autoDeployTrigger: commit
+    healthCheckPath: /health
+    dockerCommand: /bin/sh -c 'exec uvicorn app.main:app --host 0.0.0.0 --port "${PORT:-10000}"'
+    envVars:
+      - key: GROQ_API_KEY
+        sync: false
+      - key: GROQ_MODEL
+        value: qwen/qwen3.8-27b
+
+  - type: web
+    name: krishiyojana-ui
+    runtime: docker
+    plan: free
+    autoDeployTrigger: commit
+    dockerCommand: /bin/sh -c 'exec streamlit run ui/app.py --server.address=0.0.0.0 --server.port="${PORT:-10000}"'
+    envVars:
+      - key: API_URL
+        fromService:
+          type: web
+          name: krishiyojana-api
+          property: hostport
