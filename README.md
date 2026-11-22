@@ -31,6 +31,14 @@ The system allows farmers to:
 - Check eligibility using configured scheme rules.
 - Interact with an AI agent using human approval.
 
+## Real-World Problem
+
+Farmers frequently need to navigate multiple government portals, PDF documents, and scheme notices to identify benefits, eligibility conditions, application deadlines, and required documents. Information is often fragmented and difficult to interpret.
+
+## Project Solution
+
+KrishiYojana provides one natural-language interface that retrieves relevant scheme documents, generates source-cited answers, checks configured eligibility rules, and requires approval before agent tools execute. The system combines structured records with RAG so farmers can access information in a simpler, more transparent workflow.
+
 # 2. Project Objectives
 
 1. Make agricultural government scheme information easily accessible.
@@ -131,105 +139,103 @@ The system allows farmers to:
 
 # 5. Complete Project Folder Structure
 
+```text
 Gen-AI-Examate/
-│
-├── .github/
-│   └── workflows/
-│       └── ci.yml
-│
+├── .github/workflows/ci.yml
+├── analysis/
+│   ├── __init__.py
+│   └── explore.py
 ├── app/
 │   ├── __init__.py
-│   ├── main.py
-│   ├── records.py
-│   ├── models.py
-│   ├── cli.py
-│   ├── fetch.py
-│   ├── ingest.py
+│   ├── agent_loop.py
 │   ├── chunking.py
+│   ├── cli.py
 │   ├── embed.py
 │   ├── embeddings.py
+│   ├── fetch.py
+│   ├── graph.py
+│   ├── ingest.py
+│   ├── llm.py
+│   ├── main.py
+│   ├── models.py
+│   ├── rag.py
+│   ├── records.py
 │   ├── semantic_search.py
 │   ├── smart_search.py
-│   ├── rag.py
-│   ├── llm.py
-│   ├── graph.py
 │   ├── tools.py
-│   ├── vectorstore.py
-│   └── agent_loop.py
-│
+│   └── vectorstore.py
 ├── data/
 │   ├── __init__.py
-│   ├── sample_records.py
-│   ├── records.json
+│   ├── chroma_db/                 # Generated local ChromaDB; do not commit
 │   ├── chunks.json
-│   │
-│   ├── rules/
-│   │   └── scheme_rules.json
-│   │
 │   ├── raw/
 │   │   ├── DBT_Farmer_User_Manual.pdf
 │   │   ├── Scheme-SubMissionOnFarmMechanization.pdf
 │   │   ├── extracted_text.txt
 │   │   └── farm_mechanization.html
-│   │
-│   └── chroma_db/
-│       └── Generated vector database files
-│
-├── ui/
-│   └── app.py
-│
-├── analysis/
-│   ├── __init__.py
-│   └── explore.py
-│
+│   ├── records.json
+│   ├── rules/scheme_rules.json
+│   └── sample_records.py
 ├── docs/
 │   ├── DAILY_PROGRESS.md
 │   ├── how_llms_work.md
+│   ├── resume.md
 │   └── user_questions.md
-│
 ├── eval/
 │   ├── results/
 │   │   ├── comparison.md
 │   │   └── rag_eval_results.json
-│   │
 │   ├── eval_set.json
 │   ├── prompt_compare.md
 │   ├── results.json
 │   ├── run_eval.py
 │   ├── run_prompt_eval.py
 │   └── search_results.md
-│
 ├── prompts/
 │   ├── eval_prompt_v1.txt
 │   ├── eval_prompt_v2.txt
 │   ├── system_prompt.txt
 │   ├── task_prompt_1.txt
 │   └── task_prompt_2.txt
-│
+├── screenshots/
+├── tests/
+│   ├── test_day11.py
+│   ├── test_embeddings.py
+│   ├── test_production_metrics.py
+│   ├── test_response_cache.py
+│   ├── test_ui_agent.py
+│   └── test_ui_features.py
+├── ui/
+│   ├── __init__.py
+│   ├── agent_api.py
+│   ├── app.py
+│   ├── document_bag.py
+│   └── feedback.py
+├── day01_intro.py
+├── day01_menu.py
+├── Dockerfile
+├── docker-compose.yml
+├── .env.example
+├── .gitignore
+├── pyproject.toml
+├── README.md
+├── render.yaml
+├── requirements-runtime.txt
+├── requirements-ui.txt
+├── requirements.txt
+├── sync_records.py
 ├── test_agent.py
 ├── test_day9.py
 ├── test_eligibility.py
 ├── test_eligibility_graph.py
 ├── test_graph.py
 ├── test_missing_details.py
-├── test_rejection.py
-│
-├── day01_intro.py
-├── day01_menu.py
-├── sync_records.py
-│
-├── Dockerfile
-├── .env.example
-├── requirements.txt
-├── requirements-runtime.txt
-├── .gitignore
-└── README.md
+└── test_rejection.py
+```
 
-Note:
-- The structure represents the main project modules and files.
-- Generated ChromaDB files are not required to be committed.
-- Local .env and virtual environment folders should not be pushed to GitHub.
-- Keep API credentials outside the source code.
+Local `.env` files, virtual environments, generated ChromaDB data, and
+`ui/feedback.json` are local data and must not be included in commits. Keep
+credentials outside the source tree.
 
 # 6. Folder and File Description
 
@@ -266,7 +272,7 @@ Note:
 
 ---
 
-# 7. Day-by-Day Development Progress (Day 1 to Day 12)
+# 7. Day-by-Day Development Progress (Day 1 to Day 13)
 
 ## Day 1 – Project Introduction and Initial Setup
 
@@ -950,56 +956,33 @@ The backend is publicly accessible. A separate public Streamlit frontend URL is 
 
 # 8. System Architecture
 
-FARMER / USER
-      |
-      v
-Streamlit User Interface
-      |
-      v
-FastAPI Backend
-      |
-      +----------------------+
-      |                      |
-      v                      v
-   /ask                    /agent
-      |                      |
-      |                 LangGraph Agent
-      |                      |
-      |                 Select Tools
-      |                      |
-      |              +-------+-------+
-      |              |               |
-      |              v               v
-      |          RAG Search    Eligibility Check
-      |              |               |
-      |              v               v
-      |           FastEmbed     Scheme Rules
-      |              |               |
-      |              v               v
-      |           ChromaDB      Farmer Validation
-      |              |               |
-      |              +-------+-------+
-      |                      |
-      |               Human Approval
-      |                      |
-      |              +-------+-------+
-      |              |               |
-      |              v               v
-      |           Approved        Rejected
-      |              |
-      |              v
-      |          Execute Tool
-      |              |
-      +--------------+
-             |
-             v
-          Groq LLM
-             |
-             v
-       Final Response
-             |
-             v
-      Farmer / User
+```mermaid
+flowchart LR
+    Farmer[Farmer / User] --> UI[Streamlit User Interface]
+    UI --> API[FastAPI Backend]
+    API --> Ask[/ask]
+    API --> Agent[/agent]
+
+    Ask --> Records[Scheme Records]
+    Ask --> Embed[FastEmbed]
+    Embed --> Chroma[(ChromaDB)]
+    Chroma --> Groq[Groq LLM]
+    Records --> Response[Grounded Response]
+    Groq --> Response
+    Response --> UI
+
+    Agent --> Graph[LangGraph Workflow]
+    Graph --> Tools{Tool Selection}
+    Tools --> RAG[RAG Search]
+    Tools --> Eligibility[Eligibility Rules]
+    RAG --> Embed
+    Eligibility --> Validation[Farmer Validation]
+    Graph --> Approval[Human Approval]
+    Approval -->|Approved| Execute[Execute Tool]
+    Approval -->|Rejected| Stop[Stop Execution]
+    Execute --> Groq
+    Execute --> UI
+```
 
 # 9. API Endpoints
 
@@ -1231,7 +1214,12 @@ GitHub Actions workflow:
 
 The project uses GitHub Actions to support automated development checks.
 
-The CI workflow is linked to the master branch through the README status badge.
+The workflow installs Python 3.13 and runtime dependencies, runs Ruff, runs the
+full pytest suite, and builds the Docker image. Pushes to `main` or `master` and
+pull requests targeting those branches trigger CI. The latest observed run
+passed its then-configured checks, but it predates both the full-suite selector
+and the current uncommitted changes; CI for this change set is pending an
+approved push or pull request.
 
 GitHub Actions:
 
@@ -1269,37 +1257,135 @@ Important deployment details:
 - The deployment uses a free Render instance with a 512 MB memory limit.
 
 Frontend Deployment:
-The Streamlit interface has been developed, but a separate publicly accessible frontend URL has not yet been verified.
+The Streamlit interface and its Render configuration are prepared, but a
+separate publicly accessible frontend URL has not yet been verified.
+
+The Render configuration defines only the `krishiyojana-ui` Streamlit service.
+It points to the existing backend and does not create or redeploy a backend:
+
+| Setting | Value |
+|---|---|
+| Service name | `krishiyojana-ui` |
+| Runtime / plan | Python / Free |
+| Build command | `pip install -r requirements-ui.txt` |
+| Start command | `streamlit run ui/app.py --server.address 0.0.0.0 --server.port $PORT` |
+| Environment variable | `API_URL=https://gen-ai-examate.onrender.com` |
+| Deployment branch | `feature/day11-ci-deployment` |
+
+To create the UI service in Render:
+
+1. In the Render Dashboard, choose **New + → Web Service** and connect this repository.
+2. Select `feature/day11-ci-deployment`; leave the Root Directory blank.
+3. Set the service name to `krishiyojana-ui`, Runtime to Python, and Plan to Free.
+4. Enter the build and start commands from the table above.
+5. Add `API_URL` with value `https://gen-ai-examate.onrender.com`.
+6. Create the service, wait for a successful build and startup, then open the
+   Render-provided URL and verify chat and Document Bag behavior.
+7. Leave the existing `Gen-AI-Examate` backend service and its credentials
+   unchanged.
+
+**Public frontend URL:** TODO — add the Render URL only after opening and
+verifying the deployed service.
+
+## Demo
+
+Demo video recording and public link will be added after the final project demonstration.
+
+# Day 13 – Production Readiness
+
+### Production Changes
+
+- Added middleware logging for API request latency in milliseconds.
+- Added Groq prompt, completion, and total token usage logging when the SDK response includes usage information.
+- Added a thread-safe in-memory `/ask` response cache with TTL and maximum-size eviction.
+- Added a 2,000-character maximum for `/ask` questions and `/agent` questions.
+- Treat retrieved document text as untrusted factual reference data and ignore embedded instructions.
+- Added a mocked prompt-injection regression test that inspects the prompt contract and API response.
+- Prepared a separate Streamlit Render service configuration that targets the existing backend.
+- Added mocked UI tests for agent approval/rejection, Document Bag deduplication/download, and Helpful/Not Helpful feedback.
+
+### Production Notes
+
+| Area | Configuration or Verification |
+|---|---|
+| Response cache | In-memory, thread-safe LRU; 300-second TTL; maximum 100 entries; failed RAG requests are not cached |
+| Input limits | `/ask` and `/agent` questions are limited to 2,000 characters; empty values receive validation errors and whitespace-only values are rejected |
+| API request logs | Method, route path, HTTP status, and `latency_ms`; request bodies are not logged |
+| Groq usage logs | Prompt, completion, and total token counts; prompt content and credentials are not logged |
+| Cache logs | `response_cache event=hit` and `response_cache event=miss`; keys and response content are not logged |
+| Prompt-injection test | Mocked regression test checks the system-prompt contract with malicious question/document text and verifies the prompt is not returned by the API; this does not prove resistance to all attacks |
+| Automated verification | `python -m compileall -q app ui tests`, `python -m ruff check .`, `python -m pytest -q` (55 passed), and `docker build -t krishiyojana:day13 .` passed locally |
+| Production latency/token measurements | Pending Render log access; no production performance numbers are claimed |
+
+These are implementation settings and test results, not a production performance benchmark.
+
+### Production Measurement Results
+
+| Metric | Verified production value |
+|---|---|
+| Controlled request count | Pending |
+| First request client-observed latency | Pending |
+| Mean API server latency (`latency_ms`) | Pending |
+| Mean client-observed latency | Pending |
+| Mean uncached/miss latency | Pending |
+| Mean cached/hit latency | Pending |
+| Cache hits / misses / hit rate | Pending |
+| Groq prompt / completion / total tokens | Pending |
+
+### Repeatable Production Measurement Checklist
+
+Use the Render Dashboard's **Gen-AI-Examate → Logs** for the same time window
+as the controlled test. Do not include personal or sensitive questions.
+
+1. Choose five fixed, non-sensitive RAG questions that are known to call Groq.
+2. Submit each question once, then immediately repeat the exact same question.
+   This is ten `/ask` requests total; complete the pairs within the 300-second
+   cache TTL and avoid other traffic during the measurement window.
+3. Record client-observed elapsed time separately (for example, `curl`'s
+   `time_total`). The first request after a sleeping instance may include
+   Render cold-start time, which is not included in the server's `latency_ms`.
+4. From Render Logs, count `API request ... latency_ms=...` lines and calculate
+   the mean server latency for the first-use/miss and repeated/hit groups.
+5. Count `response_cache event=hit` and `response_cache event=miss` within the
+   isolated window. Calculate hit rate as
+   `hits / (hits + misses) * 100`.
+6. Sum Groq `prompt_tokens`, `completion_tokens`, and `total_tokens` only from
+   the requests that actually called Groq. A cache hit must not be counted as
+   a Groq call. If a miss has no token log, record usage as unavailable rather
+   than estimating it.
+7. Record the date, exact request count, first-request client time, mean
+   server/client times by cache group, hit/miss counts, hit rate, and token
+   totals. Keep server processing latency distinct from client-observed time.
+
+Current results for all of these production measurements: **Pending**. The
+application does not log questions or cache keys, so run this test in an
+otherwise quiet log window to correlate events safely.
 
 # 17. Production Verification Results
 
 | Component | Verification Result |
 |---|---|
-| Render deployment | PASS |
-| FastAPI startup | PASS |
-| Health endpoint | PASS |
-| ChromaDB connection | PASS |
-| FastEmbed loading | PASS |
-| Groq integration | PASS |
-| RAG question answering | PASS |
-| Source citations | PASS |
-| Scheme records endpoint | PASS |
-| Scheme search endpoint | PASS |
-| LangGraph initialization | PASS |
-| Agent tool selection | PASS |
-| Human approval workflow | PASS |
-| Agent execution after approval | PASS |
+| Existing Render backend | Deployed; latest read-only check below |
+| Latest `GET /health` | HTTP 200; `status=healthy`; `vector_database=true` |
+| Latest `GET /records` | HTTP 200; 19 scheme records |
+| FastEmbed / agent in latest health snapshot | Not loaded (`embedding_model=false`, `agent=false`); these components initialize lazily |
+| Day 12 production workflow checks | RAG, citations, Groq, FastEmbed, and approval/resume were previously recorded as passing |
+| Public Streamlit service | Not yet created or publicly verified |
+| Production latency, token and cache metrics | Pending Render log measurement |
 
-Final health response:
+Latest read-only health response observed on 22 November 2026:
 
 {
   "status": "healthy",
   "application": "KrishiYojana",
   "vector_database": true,
-  "embedding_model": true,
-  "agent": true,
+  "embedding_model": false,
+  "agent": false,
   "initialization_error": null
 }
+
+The current health response confirms the backend and vector database respond;
+it does not by itself verify a live RAG request or agent execution.
 
 # 18. Git and GitHub Commands
 

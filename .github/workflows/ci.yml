@@ -35,7 +35,7 @@ jobs:
         run: python -m ruff check .
 
       - name: Run Pytest
-        run: python -m pytest tests/ -v
+        run: python -m pytest -q
 
       - name: Build Docker Image
         run: docker build -t krishiyojana:ci .

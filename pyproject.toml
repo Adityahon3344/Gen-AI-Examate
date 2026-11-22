@@ -10,3 +10,8 @@ exclude = [
 [tool.ruff.lint]
 select = ["E", "F", "I"]
 ignore = ["E501", "E402"]
+
+[tool.pytest.ini_options]
+markers = [
+    "integration: tests requiring initialized project services or external integrations",
+]

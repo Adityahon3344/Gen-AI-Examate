@@ -73,3 +73,42 @@ The Day 9 eligibility implementation also uses `app/tools.py` and `data/rules/sc
 - A separate public Streamlit UI URL has not been confirmed.
 
 **Status:** Backend deployed and public API endpoints verified; public UI URL still needs confirmation.
+
+## Day 13 – Production Readiness
+
+**Date:** 22 November 2026
+
+### Completed
+
+- Added API request latency logging in milliseconds.
+- Added Groq prompt, completion, and total token usage logging.
+- Added a thread-safe in-memory `/ask` response cache with TTL and maximum-size eviction.
+- Added cache hit/miss logging, fixed existing-key updates, and verified TTL/LRU behavior and failure exclusion.
+- Enforced 2,000-character question limits on `/ask` and `/agent`; empty and whitespace-only questions are rejected.
+- Strengthened RAG instructions to treat retrieved content as untrusted factual reference material and not reveal internal prompts or secrets.
+- Added mocked prompt-contract security coverage, cache tests, input validation tests, and production metric logging tests.
+- Added Streamlit tests for direct chat, agent approval/rejection and thread persistence, Document Bag deduplication/download, and both feedback choices.
+- Prepared a separate `krishiyojana-ui` Render service in `render.yaml`; it uses `requirements-ui.txt` and the existing backend's `API_URL`.
+- Updated the README with the Day 13 section, separate UI deployment instructions, a production measurement checklist, and pending-value markers.
+- Added exactly three resume bullets in `docs/resume.md`, using checked scheme and local index counts.
+
+### Locally Verified
+
+- `python -m compileall -q app ui tests` — passed.
+- `python -m ruff check .` — passed.
+- `python -m pytest -q` — 55 passed; two FastAPI startup-event deprecation warnings. pytest-asyncio also emitted a fixture loop-scope configuration warning.
+- `docker build -t krishiyojana:day13 .` — passed; the image build indexed 136 chunks inside the image.
+- Frontend automated tests use mocked HTTP requests; no automated production approval or rejection was sent.
+
+### Production and External Status
+
+- Read-only `GET /health` on 22 November 2026 returned HTTP 200 and `status=healthy`; ChromaDB was available. The response reported `embedding_model=false` and `agent=false`, consistent with lazy initialization; no live RAG or agent request was sent during this check. The initial 25-second health request timed out; a subsequent retry returned HTTP 200.
+- Read-only `GET /records` returned HTTP 200 with 19 scheme records.
+- The backend service remains the existing `Gen-AI-Examate` service; no backend configuration or credentials were changed.
+- The separate Streamlit service is prepared but not yet created in Render. A public frontend URL is pending.
+- The latest observed GitHub Actions run (before these uncommitted changes) succeeded for its configured Ruff, Pytest, and Docker Build steps. The workflow now selects the full pytest suite; CI for this worktree is pending an approved push/PR.
+- Live Render API latency, cache-hit/miss totals, and Groq token totals are pending access to Render Logs. No performance numbers are claimed.
+- Day 12 previously documented successful production RAG and LangGraph approval/resume checks. Those production workflows were not re-exercised in this Day 13 run.
+- Demo recording and public video link are pending the final project demonstration.
+
+**Status:** Local implementation and validation completed; separate frontend deployment, current-branch CI, live metrics, and demo video remain pending.

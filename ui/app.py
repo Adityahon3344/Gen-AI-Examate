@@ -1,10 +1,36 @@
 import json
 import os
-from datetime import datetime
 from pathlib import Path
 
 import requests
 import streamlit as st
+
+if __package__:
+    from .agent_api import (
+        format_api_error,
+        is_eligibility_question,
+        store_agent_decision,
+        store_agent_submission,
+        submit_agent_decision,
+        submit_agent_question,
+        submit_direct_chat,
+        validate_farmer_details,
+    )
+    from .document_bag import build_document_map, format_document_checklist
+    from .feedback import save_feedback
+else:
+    from agent_api import (
+        format_api_error,
+        is_eligibility_question,
+        store_agent_decision,
+        store_agent_submission,
+        submit_agent_decision,
+        submit_agent_question,
+        submit_direct_chat,
+        validate_farmer_details,
+    )
+    from document_bag import build_document_map, format_document_checklist
+    from feedback import save_feedback
 
 # --------------------------------------------------
 # 1. Page Configuration
@@ -39,47 +65,32 @@ records = load_records()
 
 
 # --------------------------------------------------
-# 3. Feedback Storage
-# --------------------------------------------------
-
-def save_feedback(question, answer, rating):
-
-    feedback = []
-
-    if FEEDBACK_FILE.exists():
-
-        with open(FEEDBACK_FILE, "r", encoding="utf-8") as file:
-            feedback = json.load(file)
-
-    feedback.append({
-        "question": question,
-        "answer": answer,
-        "rating": rating,
-        "timestamp": datetime.now().isoformat()
-    })
-
-    with open(FEEDBACK_FILE, "w", encoding="utf-8") as file:
-
-        json.dump(
-            feedback,
-            file,
-            indent=4,
-            ensure_ascii=False
-        )
-
-
-# --------------------------------------------------
 # 4. Initialize Session State
 # --------------------------------------------------
+
+if (
+    "agent_result" not in st.session_state
+    and st.session_state.get("agent_status") == "completed"
+):
+    st.session_state.last_result = None
+    st.session_state.agent_status = None
 
 session_defaults = {
     "last_question": "",
     "last_result": None,
     "feedback_submitted": False,
     "agent_thread_id": None,
+    "agent_question": "",
     "agent_approval_pending": False,
     "agent_approval_request": None,
-    "chat_mode": "Direct Chat"
+    "approval_request": None,
+    "selected_tool": None,
+    "agent_status": None,
+    "agent_approval_status": None,
+    "agent_result": None,
+    "agent_execution_busy": False,
+    "farmer_details": {},
+    "chat_mode": "Direct Chat",
 }
 
 for key, value in session_defaults.items():
@@ -89,54 +100,19 @@ for key, value in session_defaults.items():
 
 
 # --------------------------------------------------
-# 5. Helper: Normalize Agent Result
-# --------------------------------------------------
-
-def normalize_agent_result(agent_response):
-
-    results = agent_response.get("results", {})
-
-    # RAG result
-    rag_result = results.get("rag_search")
-
-    if rag_result:
-
-        return {
-            "answer": rag_result.get("answer", "No answer returned."),
-            "sources": rag_result.get("sources", []),
-            "confidence": rag_result.get("confidence", "Not available")
-        }
-
-    # Eligibility result
-    eligibility_result = results.get("eligibility")
-
-    if eligibility_result:
-
-        return {
-            "answer": json.dumps(
-                eligibility_result,
-                indent=4,
-                ensure_ascii=False
-            ),
-            "sources": [],
-            "confidence": "Based on eligibility tool"
-        }
-
-    return {
-        "answer": (
-            f"Agent status: {agent_response.get('status', 'Unknown')}\n\n"
-            "No result was returned by the selected tool."
-        ),
-        "sources": [],
-        "confidence": "Not available"
-    }
-
-
-# --------------------------------------------------
 # 6. Display Answer and Feedback
 # --------------------------------------------------
 
 def display_answer():
+
+    if st.session_state.agent_approval_pending:
+        return
+
+    if (
+        st.session_state.chat_mode == "AI Agent"
+        and st.session_state.agent_result is None
+    ):
+        return
 
     if not st.session_state.last_result:
         return
@@ -146,11 +122,46 @@ def display_answer():
     st.divider()
     st.subheader("KrishiYojana Answer")
 
-    st.write(result.get("answer", "No answer returned."))
+    eligibility_result = result.get("eligibility")
+    if eligibility_result:
+        st.subheader("Eligibility Result")
+        status = eligibility_result.get("status", "Not available")
+        st.write(f"**Eligibility status:** {status}")
+        if "eligible" in eligibility_result:
+            st.write(
+                f"**Eligible:** {eligibility_result['eligible']}"
+            )
+        st.write(
+            f"**Explanation:** {eligibility_result.get('message', 'No explanation returned.')}"
+        )
+        failed_rules = eligibility_result.get("failed_rules", [])
+        if failed_rules:
+            st.write("**Failed rules:**")
+            for rule in failed_rules:
+                st.write(f"- {rule}")
+        missing_fields = eligibility_result.get("missing_fields", [])
+        if missing_fields:
+            st.warning(
+                "More information is needed: "
+                + ", ".join(missing_fields)
+            )
+    else:
+        st.write(result.get("answer", "No answer returned."))
 
     st.caption(
         f"Confidence: {result.get('confidence', 'Not available')}"
     )
+
+    if result.get("status"):
+        if result["status"] == "completed" and result.get("approved") is True:
+            st.success("Agent Execution Completed")
+        else:
+            st.caption(f"Agent execution status: {result['status']}")
+
+    if result.get("tools_to_use"):
+        st.caption(
+            "Selected tools: " + ", ".join(result["tools_to_use"])
+        )
 
     # Citations
 
@@ -197,6 +208,7 @@ def display_answer():
             if st.button("Helpful", key="positive_feedback"):
 
                 save_feedback(
+                    FEEDBACK_FILE,
                     st.session_state.last_question,
                     result.get("answer", ""),
                     "positive"
@@ -210,6 +222,7 @@ def display_answer():
             if st.button("Not Helpful", key="negative_feedback"):
 
                 save_feedback(
+                    FEEDBACK_FILE,
                     st.session_state.last_question,
                     result.get("answer", ""),
                     "negative"
@@ -245,8 +258,6 @@ with chat_tab:
 
     st.subheader("Ask KrishiYojana")
 
-    # Select chat mode
-
     chat_mode = st.radio(
         "Choose chat mode:",
         ["Direct Chat", "AI Agent"],
@@ -259,202 +270,322 @@ with chat_tab:
         placeholder="What documents are required for this scheme?"
     )
 
-    if st.button("Send Question", key="send_question"):
+    is_agent_mode = chat_mode == "AI Agent"
+    eligibility_requested = (
+        is_agent_mode and is_eligibility_question(question)
+    )
+    farmer_details = dict(st.session_state.farmer_details)
+    eligibility_form_submitted = False
 
-        if not question.strip():
+    if eligibility_requested:
+        st.subheader("Farmer Eligibility Details")
+        st.caption(
+            "Enter each detail explicitly. The result is based on configured "
+            "demonstration rules and is not a government eligibility guarantee."
+        )
+        with st.form("farmer_eligibility_form"):
+            land_holding_options = ["Select land holding", "7/12 holder"]
+            previous_land_holding = farmer_details.get("land_holding")
+            land_holding_index = (
+                land_holding_options.index(previous_land_holding)
+                if previous_land_holding in land_holding_options
+                else 0
+            )
+            land_holding = st.selectbox(
+                "Land holding",
+                land_holding_options,
+                index=land_holding_index,
+            )
+            land_size_acres = st.number_input(
+                "Land size (acres)",
+                min_value=0.0,
+                value=farmer_details.get("land_size_acres"),
+                step=0.1,
+            )
 
-            st.warning("Please enter your question first.")
+            caste_options = ["Select caste category", "SC", "ST", "OBC", "OPEN"]
+            previous_caste = farmer_details.get("caste_category")
+            caste_index = (
+                caste_options.index(previous_caste)
+                if previous_caste in caste_options
+                else 0
+            )
+            caste_category = st.selectbox(
+                "Caste category",
+                caste_options,
+                index=caste_index,
+            )
 
-        else:
+            previous_options = ["Choose...", "Yes", "No"]
+            previous_received = farmer_details.get(
+                "received_same_component_last_10_years"
+            )
+            previous_index = (
+                1 if previous_received is True
+                else 2 if previous_received is False
+                else 0
+            )
+            received_previous = st.radio(
+                "Received the same component in the last 10 years?",
+                previous_options,
+                index=previous_index,
+                horizontal=True,
+            )
+            tractor_value = farmer_details.get("already_has_tractor")
+            tractor_index = (
+                1 if tractor_value is True
+                else 2 if tractor_value is False
+                else 0
+            )
+            has_tractor = st.radio(
+                "Already owns a tractor?",
+                previous_options,
+                index=tractor_index,
+                horizontal=True,
+            )
+            eligibility_form_submitted = st.form_submit_button(
+                "Send Question"
+                if st.session_state.agent_status != "needs_information"
+                else "Update Details and Resubmit",
+                disabled=st.session_state.agent_execution_busy,
+            )
 
-            try:
+        farmer_details = {
+            "land_holding": (
+                "" if land_holding == "Select land holding"
+                else land_holding
+            ),
+            "land_size_acres": land_size_acres,
+            "caste_category": (
+                "" if caste_category == "Select caste category"
+                else caste_category
+            ),
+            "received_same_component_last_10_years": (
+                None if received_previous == "Choose..."
+                else received_previous == "Yes"
+            ),
+            "already_has_tractor": (
+                None if has_tractor == "Choose..."
+                else has_tractor == "Yes"
+            ),
+        }
 
-                with st.spinner("Finding your answer..."):
-
-                    # Direct Chat
-
-                    if chat_mode == "Direct Chat":
-
-                        response = requests.post(
-                            f"{API_URL}/ask",
-                            json={
-                                "question": question.strip()
-                            },
-                            timeout=120
-                        )
-
-                        response.raise_for_status()
-
-                        result = response.json()
-
-                        st.session_state.last_question = question
-                        st.session_state.last_result = result
-                        st.session_state.feedback_submitted = False
-
-                        # Clear any previous agent approval state
-                        st.session_state.agent_thread_id = None
-                        st.session_state.agent_approval_pending = False
-                        st.session_state.agent_approval_request = None
-
-                    # AI Agent
-
-                    else:
-
-                        response = requests.post(
-                            f"{API_URL}/agent",
-                            json={
-                                "question": question.strip(),
-                                "farmer_details": {}
-                            },
-                            timeout=120
-                        )
-
-                        response.raise_for_status()
-
-                        agent_response = response.json()
-
-                        st.session_state.last_question = question
-                        st.session_state.last_result = None
-                        st.session_state.feedback_submitted = False
-
-                        st.session_state.agent_thread_id = (
-                            agent_response.get("thread_id")
-                        )
-
-                        st.session_state.agent_approval_pending = (
-                            agent_response.get("status") == "awaiting_approval"
-                        )
-
-                        st.session_state.agent_approval_request = (
-                            agent_response.get("approval_request")
-                        )
-
-                        # If the agent completes without an interruption
-                        if not st.session_state.agent_approval_pending:
-
-                            st.session_state.last_result = (
-                                normalize_agent_result(agent_response)
-                            )
-
-            except requests.exceptions.RequestException as error:
-
-                st.error(f"API request failed: {error}")
-
-    # --------------------------------------------------
-    # 9. Agent Approval Section
-    # --------------------------------------------------
-
-    if st.session_state.agent_approval_pending:
-
-        st.divider()
-        st.subheader("Human Approval Required")
-
-        st.warning(
-            "The AI Agent has selected a tool. "
-            "Please approve or reject its execution."
+    send_question = False
+    if is_agent_mode and not eligibility_requested:
+        send_question = st.button(
+            "Send Question",
+            key="send_agent_question",
+            disabled=st.session_state.agent_execution_busy,
+        )
+    elif not is_agent_mode:
+        send_question = st.button(
+            "Send Question",
+            key="send_direct_question",
         )
 
-        approval_requests = st.session_state.agent_approval_request or []
+    send_agent = (
+        is_agent_mode
+        and (eligibility_form_submitted or send_question)
+    )
 
-        for approval_request in approval_requests:
+    if send_question and not question.strip():
+        st.warning("Please enter your question first.")
 
-            st.write(
-                f"**Question:** {approval_request.get('question', '')}"
+    if send_agent and not question.strip():
+        st.warning("Please enter your question first.")
+    elif send_agent:
+        missing_fields = (
+            validate_farmer_details(farmer_details)
+            if eligibility_requested
+            else []
+        )
+        if missing_fields:
+            st.warning(
+                "Please provide the following information before sending: "
+                + ", ".join(missing_fields)
             )
-
-            st.write(
-                f"**Selected tools:** "
-                f"{', '.join(approval_request.get('tools', []))}"
-            )
-
-            st.info(
-                approval_request.get(
-                    "message",
-                    "Approval is required."
+        else:
+            st.session_state.agent_execution_busy = True
+            st.session_state.agent_thread_id = None
+            st.session_state.agent_question = question.strip()
+            st.session_state.last_question = question.strip()
+            st.session_state.farmer_details = dict(farmer_details)
+            st.session_state.agent_status = "submitting"
+            st.session_state.agent_approval_pending = False
+            st.session_state.agent_approval_request = None
+            st.session_state.approval_request = None
+            st.session_state.selected_tool = None
+            st.session_state.agent_result = None
+            st.session_state.last_result = None
+            try:
+                with st.spinner("Sending question to the AI Agent..."):
+                    response = submit_agent_question(
+                        API_URL,
+                        question.strip(),
+                        farmer_details,
+                    )
+                    response.raise_for_status()
+                    agent_response = response.json()
+                    if not store_agent_submission(
+                        st.session_state,
+                        question.strip(),
+                        farmer_details,
+                        agent_response,
+                    ):
+                        st.error(
+                            "The backend did not return a valid pending "
+                            "approval. No result will be treated as approved. "
+                            "Please retry or contact support."
+                        )
+                    else:
+                        st.session_state.feedback_submitted = False
+                        st.session_state.last_result = None
+            except requests.exceptions.RequestException as error:
+                st.session_state.agent_status = "error"
+                st.error(format_api_error(error))
+            except (json.JSONDecodeError, ValueError):
+                st.session_state.agent_status = "error"
+                st.error(
+                    "The backend returned an invalid response. "
+                    "Please try again."
                 )
+            finally:
+                st.session_state.agent_execution_busy = False
+
+    elif send_question:
+        if not question.strip():
+            st.warning("Please enter your question first.")
+        else:
+            try:
+                with st.spinner("Finding your answer..."):
+                    response = submit_direct_chat(
+                        API_URL,
+                        question.strip(),
+                    )
+                    response.raise_for_status()
+                    result = response.json()
+                    st.session_state.last_question = question.strip()
+                    st.session_state.last_result = result
+                    st.session_state.feedback_submitted = False
+                    st.session_state.agent_thread_id = None
+                    st.session_state.agent_approval_pending = False
+                    st.session_state.agent_approval_request = None
+                    st.session_state.approval_request = None
+                    st.session_state.agent_status = None
+                    st.session_state.agent_result = None
+            except requests.exceptions.RequestException as error:
+                st.error(format_api_error(error))
+            except (json.JSONDecodeError, ValueError):
+                st.error(
+                    "The backend returned an invalid response. "
+                    "Please try again."
+                )
+
+    if st.session_state.agent_approval_pending:
+        st.divider()
+        st.subheader("Human Approval Required")
+        if not st.session_state.agent_thread_id:
+            st.error(
+                "The agent thread ID is missing. This approval cannot be "
+                "resumed; please submit the question again."
             )
+        st.warning(
+            "The agent has not executed the selected tool. Choose whether "
+            "to approve or reject it."
+        )
+        st.write(f"**Question:** {st.session_state.agent_question}")
+        tool_labels = {
+            "rag_search": "RAG Search",
+            "eligibility": "Eligibility Check",
+        }
+        selected_tool = st.session_state.selected_tool
+        st.write(
+            "**Selected Tool:** "
+            + tool_labels.get(selected_tool, selected_tool or "Unknown")
+        )
+        approvals = st.session_state.approval_request or []
+        if approvals:
+            st.info(approvals[0].get("message", "Approval is required."))
 
         approve_col, reject_col = st.columns(2)
-
         with approve_col:
-
-            if st.button("Approve", key="approve_agent"):
-
-                try:
-
-                    with st.spinner("Agent is executing the selected tool..."):
-
-                        response = requests.post(
-                            f"{API_URL}/agent",
-                            json={
-                                "thread_id": st.session_state.agent_thread_id,
-                                "approval": True
-                            },
-                            timeout=120
-                        )
-
-                        response.raise_for_status()
-
-                        agent_response = response.json()
-
-                        st.session_state.agent_approval_pending = False
-                        st.session_state.agent_approval_request = None
-
-                        st.session_state.last_result = (
-                            normalize_agent_result(agent_response)
-                        )
-
-                        st.session_state.feedback_submitted = False
-
-                        st.rerun()
-
-                except requests.exceptions.RequestException as error:
-
-                    st.error(f"Approval request failed: {error}")
-
+            approve_clicked = st.button(
+                "Approve Execution",
+                key="approve_agent",
+                disabled=(
+                    st.session_state.agent_execution_busy
+                    or not st.session_state.agent_thread_id
+                ),
+            )
         with reject_col:
+            reject_clicked = st.button(
+                "Reject Execution",
+                key="reject_agent",
+                disabled=(
+                    st.session_state.agent_execution_busy
+                    or not st.session_state.agent_thread_id
+                ),
+            )
 
-            if st.button("Reject", key="reject_agent"):
-
-                try:
-
-                    with st.spinner("Rejecting tool execution..."):
-
-                        response = requests.post(
-                            f"{API_URL}/agent",
-                            json={
-                                "thread_id": st.session_state.agent_thread_id,
-                                "approval": False
-                            },
-                            timeout=120
+        decision = (
+            True if approve_clicked
+            else False if reject_clicked
+            else None
+        )
+        if decision is not None and st.session_state.agent_thread_id:
+            st.session_state.agent_execution_busy = True
+            try:
+                with st.spinner(
+                    "Executing approved tool..."
+                    if decision
+                    else "Rejecting tool execution..."
+                ):
+                    response = submit_agent_decision(
+                        API_URL,
+                        st.session_state.agent_thread_id,
+                        decision,
+                    )
+                    response.raise_for_status()
+                    agent_response = response.json()
+                    store_agent_decision(
+                        st.session_state,
+                        agent_response,
+                        decision,
+                    )
+                    st.session_state.feedback_submitted = False
+                    if decision:
+                        st.success("Agent Execution Completed")
+                    else:
+                        st.info(
+                            "Agent execution rejected. "
+                            "No selected tool was executed."
                         )
-
-                        response.raise_for_status()
-
-                        agent_response = response.json()
-
-                        st.session_state.agent_approval_pending = False
-                        st.session_state.agent_approval_request = None
-                        st.session_state.agent_thread_id = None
-                        st.session_state.last_result = {
-                            "answer": "You rejected the agent's tool execution. No tool was executed.",
-                            "sources": [],
-                            "confidence": "Not applicable"
-                        }
-
-                        st.session_state.feedback_submitted = False
-
-                        st.rerun()
-
-                except requests.exceptions.RequestException as error:
-
-                    st.error(f"Rejection request failed: {error}")
+                    st.rerun()
+            except requests.exceptions.RequestException as error:
+                st.error(format_api_error(error))
+                if (
+                    isinstance(error, requests.exceptions.HTTPError)
+                    and error.response is not None
+                    and error.response.status_code == 409
+                ):
+                    st.session_state.agent_approval_pending = False
+                    st.session_state.agent_thread_id = None
+                    st.session_state.approval_request = None
+                    st.session_state.agent_approval_request = None
+                    st.session_state.agent_status = "approval_expired"
+            except (json.JSONDecodeError, ValueError):
+                st.error(
+                    "The backend returned an invalid decision response."
+                )
+            finally:
+                st.session_state.agent_execution_busy = False
 
     # --------------------------------------------------
     # 10. Display Answer
     # --------------------------------------------------
 
-    display_answer()
+    if not st.session_state.agent_approval_pending:
+        display_answer()
 
 
 # --------------------------------------------------
@@ -483,33 +614,7 @@ with bag_tab:
 
     if selected_schemes:
 
-        document_map = {}
-
-        # Collect and merge required documents
-
-        for record in records:
-
-            if record["scheme_name"] in selected_schemes:
-
-                for document in record.get("required_documents", []):
-
-                    normalized_name = document.strip().casefold()
-
-                    if normalized_name not in document_map:
-
-                        document_map[normalized_name] = {
-                            "name": document.strip(),
-                            "schemes": []
-                        }
-
-                    if (
-                        record["scheme_name"]
-                        not in document_map[normalized_name]["schemes"]
-                    ):
-
-                        document_map[normalized_name]["schemes"].append(
-                            record["scheme_name"]
-                        )
+        document_map = build_document_map(records, selected_schemes)
 
         st.subheader("Merged Document Checklist")
 
@@ -532,13 +637,7 @@ with bag_tab:
 
         # Download checklist
 
-        checklist = "\n".join(
-            [
-                f"- {item['name']} | Required for: "
-                f"{', '.join(item['schemes'])}"
-                for item in document_map.values()
-            ]
-        )
+        checklist = format_document_checklist(document_map)
 
         st.download_button(
             label="Download Document Checklist",
