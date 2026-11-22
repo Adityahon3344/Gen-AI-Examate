@@ -1,11 +1,17 @@
 
 import json
+import logging
+import os
 import threading
+import time
 import uuid
+from collections import OrderedDict
+from copy import deepcopy
 from pathlib import Path
 
 import chromadb
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import Response
 from langgraph.types import Command
 from pydantic import BaseModel, Field
 
@@ -23,6 +29,78 @@ app = FastAPI(
     description="AI-Powered Farmer Scheme Eligibility and Benefits Assistant",
     version="1.0.0",
 )
+
+logger = logging.getLogger("krishiyojana")
+
+MAX_QUESTION_LENGTH = 2000
+RESPONSE_CACHE_TTL_SECONDS = int(
+    os.getenv("RESPONSE_CACHE_TTL_SECONDS", "300")
+)
+RESPONSE_CACHE_MAX_SIZE = int(
+    os.getenv("RESPONSE_CACHE_MAX_SIZE", "100")
+)
+
+
+class TTLResponseCache:
+    def __init__(self, ttl_seconds: int, max_size: int):
+        self.ttl_seconds = ttl_seconds
+        self.max_size = max_size
+        self._items = OrderedDict()
+        self._lock = threading.RLock()
+
+    def get(self, key: str):
+        now = time.monotonic()
+        with self._lock:
+            item = self._items.get(key)
+            if item is None:
+                logger.info("response_cache event=miss")
+                return None
+
+            expires_at, value = item
+            if expires_at <= now:
+                del self._items[key]
+                logger.info("response_cache event=miss")
+                return None
+
+            self._items.move_to_end(key)
+            logger.info("response_cache event=hit")
+            return deepcopy(value)
+
+    def set(self, key: str, value):
+        with self._lock:
+            if self.max_size <= 0:
+                return
+
+            if key not in self._items and len(self._items) >= self.max_size:
+                self._items.popitem(last=False)
+
+            self._items[key] = (
+                time.monotonic() + self.ttl_seconds,
+                deepcopy(value),
+            )
+            self._items.move_to_end(key)
+
+
+response_cache = TTLResponseCache(
+    ttl_seconds=RESPONSE_CACHE_TTL_SECONDS,
+    max_size=RESPONSE_CACHE_MAX_SIZE,
+)
+
+
+@app.middleware("http")
+async def log_request_latency(request: Request, call_next):
+    started_at = time.perf_counter()
+    response: Response = await call_next(request)
+    latency_ms = (time.perf_counter() - started_at) * 1000
+
+    logger.info(
+        "API request method=%s path=%s status=%d latency_ms=%.2f",
+        request.method,
+        request.url.path,
+        response.status_code,
+        latency_ms,
+    )
+    return response
 
 # --------------------------------------------------
 # 2. Paths and Runtime Objects
@@ -46,11 +124,15 @@ ai_initialization_attempted = False
 
 
 class QuestionRequest(BaseModel):
-    question: str = Field(..., min_length=1)
+    question: str = Field(..., min_length=1, max_length=MAX_QUESTION_LENGTH)
 
 
 class AgentRequest(BaseModel):
-    question: str | None = None
+    question: str | None = Field(
+        default=None,
+        min_length=1,
+        max_length=MAX_QUESTION_LENGTH,
+    )
     farmer_details: dict | None = None
     thread_id: str | None = None
     approval: bool | None = None
@@ -283,12 +365,19 @@ def ask(request: QuestionRequest):
             detail="Vector database is unavailable.",
         )
 
+    cache_key = f"ask:{question.casefold()}:3"
+    cached_answer = response_cache.get(cache_key)
+    if cached_answer is not None:
+        return cached_answer
+
     try:
-        return ask_question(
+        answer = ask_question(
             question=question,
             vector_collection=vector_collection,
             top_k=3,
         )
+        response_cache.set(cache_key, answer)
+        return answer
 
     except HTTPException:
         raise
@@ -307,6 +396,14 @@ def ask(request: QuestionRequest):
 
 @app.post("/agent")
 def run_agent(request: AgentRequest):
+
+    if request.approval is None and (
+        not request.question or not request.question.strip()
+    ):
+        raise HTTPException(
+            status_code=400,
+            detail="A question is required to start the agent.",
+        )
 
     graph = get_agent_graph()
 
@@ -341,13 +438,6 @@ def run_agent(request: AgentRequest):
             )
 
         else:
-
-            if not request.question or not request.question.strip():
-                raise HTTPException(
-                    status_code=400,
-                    detail="A question is required to start the agent.",
-                )
-
             result = graph.invoke(
                 {
                     "question": request.question.strip(),

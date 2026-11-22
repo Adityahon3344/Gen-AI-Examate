@@ -4,6 +4,9 @@ venv/
 __pycache__/
 **/__pycache__/
 *.py[cod]
+
+# Local user feedback data
+ui/feedback.json
 # Protect environment files in every folder
 **/.env
 **/.env.*

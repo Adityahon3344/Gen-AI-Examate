@@ -1,0 +1,1 @@
+"""KrishiYojana Streamlit UI package."""

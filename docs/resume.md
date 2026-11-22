@@ -1,0 +1,3 @@
+- Built KrishiYojana with a FastAPI backend and Streamlit interface, deploying the existing API backend to Render while preparing a separate frontend service.
+- Implemented source-grounded RAG with FastEmbed and ChromaDB; verified 136 locally indexed document chunks, two source PDFs, and 19 scheme records.
+- Integrated Groq with a LangGraph agent that pauses for human approval before tool execution, and added automated tests for approval, rejection, caching, validation, and UI workflows.

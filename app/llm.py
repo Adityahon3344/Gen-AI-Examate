@@ -1,3 +1,4 @@
+import logging
 import os
 from pathlib import Path
 
@@ -14,6 +15,7 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 load_dotenv(dotenv_path=PROJECT_ROOT / ".env")
 
 DEFAULT_GROQ_MODEL = "qwen/qwen3.8-27b"
+logger = logging.getLogger("krishiyojana")
 
 
 def get_groq_client() -> Groq:
@@ -27,7 +29,10 @@ def get_groq_client() -> Groq:
     return Groq(api_key=api_key)
 
 
-def generate_response(prompt: str, system_prompt: str) -> str:
+def generate_response_with_usage(
+    prompt: str,
+    system_prompt: str,
+) -> tuple[str, dict[str, int] | None]:
     """Generate a chat response with Groq."""
     client = get_groq_client()
     model = os.getenv("GROQ_MODEL", DEFAULT_GROQ_MODEL)
@@ -67,4 +72,28 @@ def generate_response(prompt: str, system_prompt: str) -> str:
     if not response.choices or not response.choices[0].message.content:
         raise RuntimeError("Groq returned an empty response.")
 
-    return response.choices[0].message.content
+    usage = getattr(response, "usage", None)
+    usage_data = None
+
+    if usage is not None:
+        usage_data = {
+            "prompt_tokens": getattr(usage, "prompt_tokens", 0),
+            "completion_tokens": getattr(usage, "completion_tokens", 0),
+            "total_tokens": getattr(usage, "total_tokens", 0),
+        }
+        logger.info(
+            "Groq token usage prompt_tokens=%d completion_tokens=%d total_tokens=%d",
+            usage_data["prompt_tokens"],
+            usage_data["completion_tokens"],
+            usage_data["total_tokens"],
+        )
+    else:
+        logger.info("Groq token usage unavailable")
+
+    return response.choices[0].message.content, usage_data
+
+
+def generate_response(prompt: str, system_prompt: str) -> str:
+    """Generate a chat response while preserving the existing string interface."""
+    answer, _usage = generate_response_with_usage(prompt, system_prompt)
+    return answer
