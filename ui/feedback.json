@@ -4,5 +4,29 @@
         "answer": "Based on the retrieved documents, several agricultural schemes are currently listed and operational in Maharashtra. These include:\n\n*   **Pradhan Mantri Krishi Sinchayee Yojana** (Per Drop More Crop - Micro-irrigation Component)\n*   **Sub-mission on Farm Mechanization**\n*   **National Food Security Mission** (for Food grains, Oil seeds, Sugarcane, and Cotton)\n*   **Birsa Munda Krishi Kranti Yojana** (Tribal Sub Plan / Outside Tribal Sub Plan)\n*   **Dr. Babasaheb Ambedkar Krushi Swavalamban Yojana**\n*   **Mission for Integrated Development of Horticulture**\n*   **Rainfed Area Development Programme**\n*   **Bhausaheb Fundkar Phalbaag Lagvad Yojana**\n*   **Rashtriya Krushi Vikas Yojana - RAFTAAR**\n*   **State Agriculture Mechanization Scheme**\n*   **Chief Minister Sustainable Agriculture Irrigation Scheme** (including Individual Farm Pond and RKVY Plastic Lining to Farm Pond)\n*   **Dr. Shyamprasad Mukherjee Jan-Van Vikas Scheme**\n*   **PMRKVY-Rainfed Area Development**\n*   **Gopinath Munde Shetkari Apghat Suraksha Sanugrah Anudan Yojana**\n*   **Kaju Kalam Vatap Yojana** [Source 1]\n\nAdditionally, Farm Mechanization programmes are also being implemented through other missions such as RKVY, MIDH, NMOOP & SMAM [Source 3].\n\nPlease note that the MahaDBT Farmer Portal is scheduled to reopen soon for fresh registrations and applications for the 2025–26 year onwards, using a \"First Come, First Served\" approach [Source 1]. Final approval for any scheme is decided by the concerned government department.",
         "rating": "positive",
         "timestamp": "2026-11-18T15:39:15.632462"
+    },
+    {
+        "question": "What is the objective of the farm mechanization scheme?",
+        "answer": "The objectives of the Sub-Mission on Agricultural Mechanization (SMAM) are:\n\n1.  To increase the reach of farm mechanization to small and marginal farmers and to regions where the availability of farm power is low.\n2.  To promote ‘Custom Hiring Centres’ to offset the adverse economies of scale arising due to small landholdings and the high cost of individual ownership.\n3.  To create hubs for hi-tech and high-value farm equipment.\n\n[Source 2]",
+        "rating": "positive",
+        "timestamp": "2026-11-22T12:07:29.278015"
+    },
+    {
+        "question": "What is the objective of the farm mechanization scheme?",
+        "answer": "The objectives of the Sub-Mission on Agricultural Mechanization (SMAM) are:\n\n1.  To increase the reach of farm mechanization to small and marginal farmers and to regions where the availability of farm power is low.\n2.  To promote ‘Custom Hiring Centres’ to offset the adverse economies of scale arising due to small landholding and the high cost of individual ownership.\n3.  To create hubs for hi-tech & high value farm equipments.\n\n[Source 2]",
+        "rating": "positive",
+        "timestamp": "2026-11-22T23:05:53.302675"
+    },
+    {
+        "question": "What are the objectives of the farm mechanization scheme?",
+        "answer": "Based on the retrieved document context, the objectives of the Sub-Mission on Agricultural Mechanization (SMAM) are:\n\n1.  **Increase Reach:** To increase the reach of farm mechanization to small and marginal farmers and to regions where the availability of farm power is low [Source 3].\n2.  **Promote Custom Hiring:** To promote 'Custom Hiring Centres' to offset the adverse economies of scale arising due to small landholdings and the high cost of individual ownership [Source 3].\n3.  **Create Hubs:** To create hubs for hi-tech and high-value farm equipment [Source 3].\n4.  **Increase Farm Power Ratio:** To promote the usage of farm mechanization and increase the ratio of farm power to cultivable unit area up to 2.5 kW/ha [Source 3].\n\nPlease note that final approval for any specific scheme or benefit is decided by the concerned government department.",
+        "rating": "positive",
+        "timestamp": "2026-11-22T23:14:19.203489"
+    },
+    {
+        "question": "Scheme question",
+        "answer": "Grounded answer",
+        "rating": "positive",
+        "timestamp": "2026-11-22T23:46:25.526245"
     }
 ]

@@ -950,7 +950,9 @@ Outcome:
 
 Successfully deployed the FastAPI backend and AI agent to Render. Verified RAG question answering, Groq integration, FastEmbed embeddings, ChromaDB retrieval, scheme records, search functionality, and LangGraph human approval execution.
 
-The backend is publicly accessible. A separate public Streamlit frontend URL is not yet confirmed.
+The backend is publicly accessible. The project owner provided the Streamlit
+frontend URL `https://krishiyojana-ui.onrender.com`; it was not independently
+checked during this measurement task.
 
 ---
 
@@ -1216,10 +1218,11 @@ The project uses GitHub Actions to support automated development checks.
 
 The workflow installs Python 3.13 and runtime dependencies, runs Ruff, runs the
 full pytest suite, and builds the Docker image. Pushes to `main` or `master` and
-pull requests targeting those branches trigger CI. The latest observed run
-passed its then-configured checks, but it predates both the full-suite selector
-and the current uncommitted changes; CI for this change set is pending an
-approved push or pull request.
+pull requests targeting those branches trigger CI. The Day 13 pull request was
+merged into `master`, and its GitHub Actions run completed successfully:
+[run 45056834212](https://github.com/Adityahon3344/Gen-AI-Examate/actions/runs/45056834212).
+The run passed Ruff, the full pytest suite (**55 passed**), and the Docker
+image build.
 
 GitHub Actions:
 
@@ -1257,8 +1260,9 @@ Important deployment details:
 - The deployment uses a free Render instance with a 512 MB memory limit.
 
 Frontend Deployment:
-The Streamlit interface and its Render configuration are prepared, but a
-separate publicly accessible frontend URL has not yet been verified.
+The project owner reports that the Streamlit frontend is deployed at
+`https://krishiyojana-ui.onrender.com`. Its live availability was not
+independently checked during this task.
 
 The Render configuration defines only the `krishiyojana-ui` Streamlit service.
 It points to the existing backend and does not create or redeploy a backend:
@@ -1272,7 +1276,8 @@ It points to the existing backend and does not create or redeploy a backend:
 | Environment variable | `API_URL=https://gen-ai-examate.onrender.com` |
 | Deployment branch | `feature/day11-ci-deployment` |
 
-To create the UI service in Render:
+The following are the existing service configuration details; do not create a
+duplicate service if it is already active:
 
 1. In the Render Dashboard, choose **New + → Web Service** and connect this repository.
 2. Select `feature/day11-ci-deployment`; leave the Root Directory blank.
@@ -1284,8 +1289,8 @@ To create the UI service in Render:
 7. Leave the existing `Gen-AI-Examate` backend service and its credentials
    unchanged.
 
-**Public frontend URL:** TODO — add the Render URL only after opening and
-verifying the deployed service.
+**Public frontend URL:** https://krishiyojana-ui.onrender.com (provided by the
+project owner; not independently verified here).
 
 ## Demo
 
@@ -1299,10 +1304,19 @@ Demo video recording and public link will be added after the final project demon
 - Added Groq prompt, completion, and total token usage logging when the SDK response includes usage information.
 - Added a thread-safe in-memory `/ask` response cache with TTL and maximum-size eviction.
 - Added a 2,000-character maximum for `/ask` questions and `/agent` questions.
+- Added validated request-ID correlation across successful and error response headers, API latency logs, cache events, and Groq usage logs; unexpected server errors retain the ID without exposing exception details in the response.
 - Treat retrieved document text as untrusted factual reference data and ignore embedded instructions.
 - Added a mocked prompt-injection regression test that inspects the prompt contract and API response.
+- Added `scripts/measure_production.py` for six controlled client-side `/ask` measurements; it does not report server latency or infer cache hits.
+- Reworked the LangGraph approval integration test to use an isolated in-memory ChromaDB collection and mocked RAG generation; approval interruption and resume are tested without local database files, model downloads, or Groq credentials.
 - Prepared a separate Streamlit Render service configuration that targets the existing backend.
 - Added mocked UI tests for agent approval/rejection, Document Bag deduplication/download, and Helpful/Not Helpful feedback.
+
+**Day 13 status (updated 23 November 2026):** Production-readiness code,
+automated tests, documentation, Docker build, and GitHub Actions validation are
+complete. Client-observed production timings are recorded below; Render
+server-latency, cache-event, and Groq-token log measurements, independent
+frontend availability verification, and the demo recording remain pending.
 
 ### Production Notes
 
@@ -1310,12 +1324,16 @@ Demo video recording and public link will be added after the final project demon
 |---|---|
 | Response cache | In-memory, thread-safe LRU; 300-second TTL; maximum 100 entries; failed RAG requests are not cached |
 | Input limits | `/ask` and `/agent` questions are limited to 2,000 characters; empty values receive validation errors and whitespace-only values are rejected |
-| API request logs | Method, route path, HTTP status, and `latency_ms`; request bodies are not logged |
-| Groq usage logs | Prompt, completion, and total token counts; prompt content and credentials are not logged |
-| Cache logs | `response_cache event=hit` and `response_cache event=miss`; keys and response content are not logged |
+| API request logs | Every request logs its ID, method, path, HTTP status, and server-side `latency_ms` measured with `time.perf_counter()`; request bodies are not logged |
+| Request correlation | Accepts a validated incoming `X-Request-ID` or generates a UUID; returns it on normal and error responses and uses context-local state to correlate concurrent requests |
+| Groq usage logs | Prompt, completion, and total token counts correlated by request ID when the SDK returns usage; otherwise usage is explicitly logged as unavailable |
+| Cache logs | `response_cache event=hit`, `event=miss`, and `event=expired`, each with request ID; keys and response content are not logged |
 | Prompt-injection test | Mocked regression test checks the system-prompt contract with malicious question/document text and verifies the prompt is not returned by the API; this does not prove resistance to all attacks |
-| Automated verification | `python -m compileall -q app ui tests`, `python -m ruff check .`, `python -m pytest -q` (55 passed), and `docker build -t krishiyojana:day13 .` passed locally |
-| Production latency/token measurements | Pending Render log access; no production performance numbers are claimed |
+| Graph approval integration test | `python -m pytest -q test_graph.py` — 1 passed using an isolated ChromaDB fixture and mocked RAG call |
+| Local automated verification | Compileall and Ruff passed; `python -m pytest -v` — 64 passed; Docker build passed in the prior validation |
+| GitHub Actions | Passed on merged Day 13 PR; Ruff, full pytest suite (55 passed), and Docker build all succeeded |
+| Render mean server latency, confirmed cache hits/misses and hit rate, and Groq token measurements | Pending Render Logs; client-observed timings are reported separately below |
+| Measurement utility | `python scripts/measure_production.py --question "..."` sends six requests, prints client-observed latency, and saves local JSON without saving the question or response |
 
 These are implementation settings and test results, not a production performance benchmark.
 
@@ -1323,69 +1341,79 @@ These are implementation settings and test results, not a production performance
 
 | Metric | Verified production value |
 |---|---|
-| Controlled request count | Pending |
-| First request client-observed latency | Pending |
+| Previously observed controlled requests | 6 repeated `/ask` requests using the same eligible RAG question; all returned HTTP 200 |
+| First request client-observed latency | 2.757952 seconds |
+| Five repeated request client-observed latencies | 0.427574, 0.500659, 1.003299, 0.775979, and 0.470653 seconds |
+| Average of five repeated requests | 0.635633 seconds, client-observed |
 | Mean API server latency (`latency_ms`) | Pending |
-| Mean client-observed latency | Pending |
-| Mean uncached/miss latency | Pending |
-| Mean cached/hit latency | Pending |
-| Cache hits / misses / hit rate | Pending |
-| Groq prompt / completion / total tokens | Pending |
+| Confirmed cache hits | Pending Render log verification |
+| Confirmed cache misses | Pending Render log verification |
+| Cache hit rate | Pending Render log verification |
+| Groq prompt tokens | Pending Render log verification |
+| Groq completion tokens | Pending Render log verification |
+| Groq total tokens | Pending Render log verification |
+
+These are previously observed, client-side timings, including network overhead.
+The repeat timings do not establish that the cache served the requests; cache
+events must be confirmed from Render Logs. They are not API server latency
+measurements, and no server latency, cache hit rate, or Groq token count is
+claimed from this sample.
 
 ### Repeatable Production Measurement Checklist
 
-Use the Render Dashboard's **Gen-AI-Examate → Logs** for the same time window
-as the controlled test. Do not include personal or sensitive questions.
+To collect a new six-request client-side sample, run
+`python scripts/measure_production.py --question "..."`. The script sends a
+unique `X-Request-ID` per request and saves its status, returned ID, and
+client-observed latency to `production_measurements.json`. The question and
+answer are not saved. Do not use personal or sensitive questions. Client timing
+alone does not confirm cache events or server-side latency.
 
-1. Choose five fixed, non-sensitive RAG questions that are known to call Groq.
-2. Submit each question once, then immediately repeat the exact same question.
-   This is ten `/ask` requests total; complete the pairs within the 300-second
-   cache TTL and avoid other traffic during the measurement window.
-3. Record client-observed elapsed time separately (for example, `curl`'s
-   `time_total`). The first request after a sleeping instance may include
-   Render cold-start time, which is not included in the server's `latency_ms`.
-4. From Render Logs, count `API request ... latency_ms=...` lines and calculate
-   the mean server latency for the first-use/miss and repeated/hit groups.
-5. Count `response_cache event=hit` and `response_cache event=miss` within the
-   isolated window. Calculate hit rate as
+To verify server metrics for that sample, open the Render Dashboard's
+**Gen-AI-Examate → Logs** and filter for its request IDs. Copy only matching
+entries for `API request request_id=... method=POST path=/ask`,
+`response_cache event=hit|miss request_id=...`, and
+`Groq token usage request_id=... prompt_tokens=... completion_tokens=...
+total_tokens=...`.
+
+1. Count the API request lines and calculate the mean server latency from their
+   `latency_ms` values. Keep it separate from client-observed timings.
+2. Count cache hits and misses, then calculate hit rate as
    `hits / (hits + misses) * 100`.
-6. Sum Groq `prompt_tokens`, `completion_tokens`, and `total_tokens` only from
-   the requests that actually called Groq. A cache hit must not be counted as
-   a Groq call. If a miss has no token log, record usage as unavailable rather
-   than estimating it.
-7. Record the date, exact request count, first-request client time, mean
-   server/client times by cache group, hit/miss counts, hit rate, and token
-   totals. Keep server processing latency distinct from client-observed time.
+3. Sum token counts only for requests that actually called Groq. Do not count
+   cache hits as LLM calls; record absent token logs as unavailable, not zero.
+4. Keep the date, request count, server mean, client mean, hit/miss counts,
+   hit rate, and token totals together as one measurement record.
 
-Current results for all of these production measurements: **Pending**. The
-application does not log questions or cache keys, so run this test in an
-otherwise quiet log window to correlate events safely.
+The application does not log questions or cache keys. If other traffic appears
+in the log window, use the unique request IDs to separate the controlled
+requests without exposing question content.
 
 # 17. Production Verification Results
 
 | Component | Verification Result |
 |---|---|
 | Existing Render backend | Deployed; latest read-only check below |
-| Latest `GET /health` | HTTP 200; `status=healthy`; `vector_database=true` |
-| Latest `GET /records` | HTTP 200; 19 scheme records |
-| FastEmbed / agent in latest health snapshot | Not loaded (`embedding_model=false`, `agent=false`); these components initialize lazily |
+| Latest `GET /health` (23 Nov 2026) | HTTP 200; `status=healthy`; `vector_database=true`; `embedding_model=true` |
+| Agent in latest health snapshot | Not initialized (`agent=false`); the agent graph is initialized lazily when requested |
+| Latest `GET /records` (23 Nov 2026) | HTTP 200; 19 scheme records |
 | Day 12 production workflow checks | RAG, citations, Groq, FastEmbed, and approval/resume were previously recorded as passing |
-| Public Streamlit service | Not yet created or publicly verified |
+| Day 13 GitHub Actions | Passed; full pytest suite reported 55 passed; Docker build succeeded |
+| Public Streamlit service | `https://krishiyojana-ui.onrender.com` provided by owner; not independently verified in this task |
 | Production latency, token and cache metrics | Pending Render log measurement |
 
-Latest read-only health response observed on 22 November 2026:
+Latest read-only health response observed on 23 November 2026:
 
 {
   "status": "healthy",
   "application": "KrishiYojana",
   "vector_database": true,
-  "embedding_model": false,
+  "embedding_model": true,
   "agent": false,
   "initialization_error": null
 }
 
-The current health response confirms the backend and vector database respond;
-it does not by itself verify a live RAG request or agent execution.
+The current health response confirms that the backend, vector database, and
+FastEmbed model respond. It does not by itself verify agent execution.
 
 # 18. Git and GitHub Commands
 
@@ -1428,12 +1456,12 @@ https://github.com/Adityahon3344/Gen-AI-Examate
 3. AI-generated information should be checked against official sources for important decisions.
 4. LangGraph MemorySaver currently stores workflow state in memory and is not persistent across application restarts.
 5. Exact Render CPU and memory consumption could not be confirmed on the free plan because detailed metrics were restricted.
-6. The backend is publicly deployed, but a separate public Streamlit frontend URL has not yet been confirmed.
+6. The backend is publicly deployed; the project owner provided `https://krishiyojana-ui.onrender.com` as the frontend URL, but it has not been independently checked here.
 7. Some scheme records contain general or component-specific information that should be validated against current official guidance.
 
 # 20. Future Enhancements
 
-- Deploy the Streamlit frontend publicly.
+- Independently verify frontend availability and add a demo video.
 - Add Marathi and other regional language support.
 - Expand the verified agricultural scheme knowledge base.
 - Add more scheme-specific eligibility rules.

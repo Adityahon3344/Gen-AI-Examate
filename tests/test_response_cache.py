@@ -4,6 +4,7 @@ import pytest
 from fastapi import HTTPException
 
 from app import main
+from app.request_context import request_id_context
 
 
 def test_cache_hit_returns_a_deep_copy_and_logs(caplog):
@@ -12,22 +13,30 @@ def test_cache_hit_returns_a_deep_copy_and_logs(caplog):
     cache.set("question", original)
     original["answer"]["text"] = "Changed after caching"
 
-    with caplog.at_level(logging.INFO, logger="krishiyojana"):
-        first_result = cache.get("question")
-        first_result["answer"]["text"] = "Changed after retrieval"
-        second_result = cache.get("question")
+    context_token = request_id_context.set("cache-hit-test")
+    try:
+        with caplog.at_level(logging.INFO, logger="krishiyojana"):
+            first_result = cache.get("question")
+            first_result["answer"]["text"] = "Changed after retrieval"
+            second_result = cache.get("question")
+    finally:
+        request_id_context.reset(context_token)
 
     assert second_result == {"answer": {"text": "Cached answer"}}
-    assert "response_cache event=hit" in caplog.text
+    assert "response_cache event=hit request_id=cache-hit-test" in caplog.text
 
 
 def test_cache_miss_logs(caplog):
     cache = main.TTLResponseCache(ttl_seconds=300, max_size=2)
 
-    with caplog.at_level(logging.INFO, logger="krishiyojana"):
-        assert cache.get("missing") is None
+    context_token = request_id_context.set("cache-miss-test")
+    try:
+        with caplog.at_level(logging.INFO, logger="krishiyojana"):
+            assert cache.get("missing") is None
+    finally:
+        request_id_context.reset(context_token)
 
-    assert "response_cache event=miss" in caplog.text
+    assert "response_cache event=miss request_id=cache-miss-test" in caplog.text
 
 
 def test_cache_entry_expires_at_ttl(monkeypatch, caplog):
@@ -40,10 +49,21 @@ def test_cache_entry_expires_at_ttl(monkeypatch, caplog):
     assert cache.get("question") == {"answer": "Cached"}
 
     now[0] = 105.0
-    with caplog.at_level(logging.INFO, logger="krishiyojana"):
-        assert cache.get("question") is None
+    context_token = request_id_context.set("cache-expiration-test")
+    try:
+        with caplog.at_level(logging.INFO, logger="krishiyojana"):
+            assert cache.get("question") is None
+    finally:
+        request_id_context.reset(context_token)
 
-    assert "response_cache event=miss" in caplog.text
+    assert (
+        "response_cache event=miss request_id=cache-expiration-test"
+        in caplog.text
+    )
+    assert (
+        "response_cache event=expired request_id=cache-expiration-test"
+        in caplog.text
+    )
 
 
 def test_cache_evicts_least_recently_used_entry():
