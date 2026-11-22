@@ -11,6 +11,8 @@ from groq import (
     RateLimitError,
 )
 
+from app.request_context import current_request_id
+
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 load_dotenv(dotenv_path=PROJECT_ROOT / ".env")
 
@@ -74,21 +76,37 @@ def generate_response_with_usage(
 
     usage = getattr(response, "usage", None)
     usage_data = None
+    request_id = current_request_id() or "unavailable"
 
     if usage is not None:
-        usage_data = {
-            "prompt_tokens": getattr(usage, "prompt_tokens", 0),
-            "completion_tokens": getattr(usage, "completion_tokens", 0),
-            "total_tokens": getattr(usage, "total_tokens", 0),
+        usage_values = {
+            name: getattr(usage, name, None)
+            for name in (
+                "prompt_tokens",
+                "completion_tokens",
+                "total_tokens",
+            )
         }
-        logger.info(
-            "Groq token usage prompt_tokens=%d completion_tokens=%d total_tokens=%d",
-            usage_data["prompt_tokens"],
-            usage_data["completion_tokens"],
-            usage_data["total_tokens"],
-        )
+        if all(type(value) is int for value in usage_values.values()):
+            usage_data = usage_values
+            logger.info(
+                "Groq token usage request_id=%s prompt_tokens=%d "
+                "completion_tokens=%d total_tokens=%d",
+                request_id,
+                usage_data["prompt_tokens"],
+                usage_data["completion_tokens"],
+                usage_data["total_tokens"],
+            )
+        else:
+            logger.info(
+                "Groq token usage unavailable request_id=%s",
+                request_id,
+            )
     else:
-        logger.info("Groq token usage unavailable")
+        logger.info(
+            "Groq token usage unavailable request_id=%s",
+            request_id,
+        )
 
     return response.choices[0].message.content, usage_data
 

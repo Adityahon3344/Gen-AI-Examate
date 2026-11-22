@@ -11,13 +11,14 @@ from pathlib import Path
 
 import chromadb
 from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import Response
+from fastapi.responses import PlainTextResponse
 from langgraph.types import Command
 from pydantic import BaseModel, Field
 
 from app.embeddings import is_embedding_model_loaded
 from app.graph import build_graph
 from app.rag import ask_question
+from app.request_context import current_request_id, request_id_context, valid_request_id
 from app.vectorstore import COLLECTION_NAME, DB_PATH
 
 # --------------------------------------------------
@@ -50,20 +51,34 @@ class TTLResponseCache:
 
     def get(self, key: str):
         now = time.monotonic()
+        request_id = current_request_id() or "unavailable"
         with self._lock:
             item = self._items.get(key)
             if item is None:
-                logger.info("response_cache event=miss")
+                logger.info(
+                    "response_cache event=miss request_id=%s",
+                    request_id,
+                )
                 return None
 
             expires_at, value = item
             if expires_at <= now:
                 del self._items[key]
-                logger.info("response_cache event=miss")
+                logger.info(
+                    "response_cache event=expired request_id=%s",
+                    request_id,
+                )
+                logger.info(
+                    "response_cache event=miss request_id=%s",
+                    request_id,
+                )
                 return None
 
             self._items.move_to_end(key)
-            logger.info("response_cache event=hit")
+            logger.info(
+                "response_cache event=hit request_id=%s",
+                request_id,
+            )
             return deepcopy(value)
 
     def set(self, key: str, value):
@@ -89,18 +104,44 @@ response_cache = TTLResponseCache(
 
 @app.middleware("http")
 async def log_request_latency(request: Request, call_next):
-    started_at = time.perf_counter()
-    response: Response = await call_next(request)
-    latency_ms = (time.perf_counter() - started_at) * 1000
-
-    logger.info(
-        "API request method=%s path=%s status=%d latency_ms=%.2f",
-        request.method,
-        request.url.path,
-        response.status_code,
-        latency_ms,
+    supplied_request_id = request.headers.get("X-Request-ID")
+    request_id = (
+        supplied_request_id
+        if valid_request_id(supplied_request_id)
+        else str(uuid.uuid4())
     )
-    return response
+    context_token = request_id_context.set(request_id)
+    request.state.request_id = request_id
+    started_at = time.perf_counter()
+    response = None
+    try:
+        response = await call_next(request)
+        response.headers["X-Request-ID"] = request_id
+        return response
+    finally:
+        latency_ms = (time.perf_counter() - started_at) * 1000
+        status_code = response.status_code if response is not None else 500
+        logger.info(
+            "API request request_id=%s method=%s path=%s status=%d latency_ms=%.2f",
+            request_id,
+            request.method,
+            request.url.path,
+            status_code,
+            latency_ms,
+        )
+        request_id_context.reset(context_token)
+
+
+@app.exception_handler(Exception)
+async def handle_unexpected_error(request: Request, _error: Exception):
+    request_id = getattr(request.state, "request_id", None)
+    headers = {"X-Request-ID": request_id} if request_id else None
+    return PlainTextResponse(
+        "Internal Server Error",
+        status_code=500,
+        headers=headers,
+    )
+
 
 # --------------------------------------------------
 # 2. Paths and Runtime Objects

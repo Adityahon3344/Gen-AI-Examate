@@ -7,6 +7,10 @@ __pycache__/
 
 # Local user feedback data
 ui/feedback.json
+
+# Local production measurement output
+production_measurements*.json
+
 # Protect environment files in every folder
 **/.env
 **/.env.*
