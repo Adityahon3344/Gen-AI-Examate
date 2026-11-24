@@ -114,4 +114,84 @@ The Day 9 eligibility implementation also uses `app/tools.py` and `data/rules/sc
 - Day 12 previously documented successful production RAG and LangGraph approval/resume checks. Those production workflows were not re-exercised in this Day 13 run.
 - Demo recording and public video link are pending the final project demonstration.
 
-**Status:** Local implementation and validation completed; independent frontend verification, current-branch CI, live metrics, and demo video remain pending.
+**Status at the Day 13 checkpoint:** Local implementation and validation were
+completed; frontend availability, current-branch CI, live metrics, and the
+demo video remained pending at that time. The Day 14 section below records the
+later HTTP availability check; interactive frontend behavior remains open.
+
+## Day 14 – Documentation Finalization and Source Review
+
+**Date:** 23 November 2026
+
+### Completed
+
+- Reviewed the implementation, tests, RAG pipeline, source files, deployment
+  configuration, branches, and existing tags before updating documentation.
+- Created `docs/interview.md` with a technically bounded pitch, ten interview
+  answers, and a source-checked story about mixed-language and year-specific
+  scheme evidence.
+- Created `docs/demo_rehearsal.md` with two separate checklists. Neither
+  rehearsal is marked complete.
+- Created root `PROGRESS.md` because no root progress tracker existed at the
+  start of this review; it records verified work and open owner/external
+  actions.
+- Updated README architecture, technology descriptions, source limitations,
+  deployment status, and verification notes. Reviewed the three resume bullets
+  in `docs/resume.md`.
+- Checked the local source corpus: 2 PDFs, 1 HTML snapshot, and 136 indexed
+  chunks. The snapshot says first-come, first-served selection applies “from
+  2025–26 onwards”; it contains no capture/issue date. A bundled PDF contains
+  guidance marked 2018–19 and does not contain the 2025–26 notice. No separate
+  Benefit PDF is present.
+- Removed the tracked `ui/feedback.json` from the Git index while preserving
+  the local runtime file; `.gitignore` already excludes it.
+- Read-only public checks: the Streamlit URL returned HTTP 200; a later
+  backend `/health` retry returned HTTP 200 with ChromaDB available and the
+  embedding model and agent still lazy/uninitialized. `/records` returned
+  HTTP 200. No live RAG or agent request was made.
+
+### Validation
+
+- `python -m pytest -v` — **64 passed**; two existing deprecation warnings
+  (FastAPI `on_event` and unset pytest-asyncio fixture loop scope).
+- `python -m ruff check .` — **passed**.
+- `python -m compileall -q app ui tests` — **passed**.
+- `git diff --check` — **passed**.
+- No Render log metrics, new GitHub Actions run, or demo rehearsal was
+  performed during this review.
+
+### Remaining
+
+- Both demo rehearsals remain open for the project owner.
+- Live RAG/agent behavior and interactive frontend workflows remain to be
+  demonstrated.
+- Render server-latency, cache-event, and Groq-token measurements remain
+  pending Render Logs.
+- CI for the final worktree and the demo recording remain pending.
+
+### Day 14 Automated Validation Addendum
+
+- Added `tests/test_rag_validation.py`: real ephemeral ChromaDB ranking,
+  source/page mapping, unsupported-response handling, empty-index abstention,
+  and API retrieval-error/non-cache behavior.
+- Added `tests/test_agent_validation.py`: invalid API approval payload,
+  invalid graph resume rejection without tool execution, agent initialization
+  failure, and correlated agent execution timeout response.
+- Extended `tests/test_ui_agent.py` for direct-chat connection/timeout/server
+  errors and approval timeout handling. Existing UI tests continue covering
+  approval, rejection, feedback, and Document Bag behavior.
+- `app/llm.py` now reports Groq `APITimeoutError` as a timeout instead of
+  incorrectly labeling it as a generic connection failure.
+- Existing observability implementation and tests cover request IDs, API
+  latency, response-cache events, and Groq usage logs. No production log
+  metrics were collected.
+- `python -m pytest -v` — **77 passed**, with two existing deprecation
+  warnings. `python -m ruff check .` and
+  `python -m compileall -q app ui tests` — **passed**.
+- The repository's annotated `final` tag was already present locally and on
+  `origin`, pointing to the existing HEAD commit. It was not changed. The
+  current worktree changes are not included in that commit.
+- Marathi-English and financial-year/GR version-aware retrieval remain
+  unsupported and are not claimed as implemented.
+
+The two demo rehearsals and video recording/publication remain open.

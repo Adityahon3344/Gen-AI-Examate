@@ -1,6 +1,7 @@
 from pathlib import Path
 from unittest.mock import patch
 
+import pytest
 import requests
 from streamlit.testing.v1 import AppTest
 
@@ -321,6 +322,71 @@ def test_backend_connection_error_is_shown_without_approval():
     assert post.call_count == 1
     assert app.session_state["agent_approval_pending"] is False
     assert any("Could not connect" in error.value for error in app.error)
+
+
+@pytest.mark.parametrize(
+    ("failure", "message"),
+    [
+        (
+            requests.exceptions.Timeout("slow backend"),
+            "The backend took too long to respond",
+        ),
+        (
+            requests.exceptions.ConnectionError("offline"),
+            "Could not connect to the backend",
+        ),
+    ],
+)
+def test_direct_chat_transport_errors_are_displayed(
+    failure,
+    message,
+):
+    app = AppTest.from_file(APP_PATH, default_timeout=20).run()
+    app.text_input[0].set_value("What scheme may help?").run()
+
+    with patch("requests.post", side_effect=failure):
+        app.button(key="send_direct_question").click().run()
+
+    assert app.session_state["last_result"] is None
+    assert any(message in error.value for error in app.error)
+
+
+def test_direct_chat_server_error_is_displayed():
+    app = AppTest.from_file(APP_PATH, default_timeout=20).run()
+    app.text_input[0].set_value("What scheme may help?").run()
+
+    with patch(
+        "requests.post",
+        return_value=FakeResponse(
+            {"detail": "Temporary backend failure"},
+            status_code=503,
+        ),
+    ):
+        app.button(key="send_direct_question").click().run()
+
+    assert app.session_state["last_result"] is None
+    assert any("server error (HTTP 503)" in error.value for error in app.error)
+
+
+def test_agent_approval_timeout_keeps_pending_decision_retryable():
+    app = AppTest.from_file(APP_PATH, default_timeout=20).run()
+    with patch(
+        "requests.post",
+        side_effect=[
+            awaiting_response(),
+            requests.exceptions.Timeout("slow backend"),
+        ],
+    ) as post:
+        start_agent(app)
+        app.button(key="approve_agent").click().run()
+
+    assert post.call_count == 2
+    assert app.session_state["agent_approval_pending"] is True
+    assert app.session_state["agent_execution_busy"] is False
+    assert any(
+        "The backend took too long to respond" in error.value
+        for error in app.error
+    )
 
 
 def test_initial_completed_response_never_displays_result_as_approved():
