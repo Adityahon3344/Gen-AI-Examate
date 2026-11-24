@@ -39,6 +39,10 @@ Farmers frequently need to navigate multiple government portals, PDF documents, 
 
 KrishiYojana provides one natural-language interface that retrieves relevant scheme documents, generates source-cited answers, checks configured eligibility rules, and requires approval before agent tools execute. The system combines structured records with RAG so farmers can access information in a simpler, more transparent workflow.
 
+See the [interview preparation](docs/interview.md), [demo rehearsal
+checklist](docs/demo_rehearsal.md), and [finalization tracker](PROGRESS.md)
+for verified capabilities, limitations, and remaining owner actions.
+
 # 2. Project Objectives
 
 1. Make agricultural government scheme information easily accessible.
@@ -74,8 +78,14 @@ KrishiYojana provides one natural-language interface that retrieves relevant sch
 - Generate query embeddings using FastEmbed.
 - Retrieve relevant document chunks from ChromaDB.
 - Generate contextual responses using Groq.
-- Return source references with generated answers.
+- Return basic source title, file, and page references when indexed metadata is available.
 - Provide answers grounded in retrieved documents.
+
+The current index stores only source, title, and page metadata. It does not
+identify an exact controlling Government Resolution, preserve an official URL
+for each indexed chunk, or filter by language, scheme version, or financial
+year. See [RAG coverage and limitations](docs/interview.md#implementation-status-at-a-glance)
+before interpreting a citation as an exact or current government notice.
 
 ## 3.4 Farmer Eligibility Checking
 - Collect farmer information.
@@ -105,7 +115,6 @@ KrishiYojana provides one natural-language interface that retrieves relevant sch
 
 ## 3.7 Document Bag
 - Select multiple agricultural schemes.
-- Select two or three schemes.
 - Retrieve required documents.
 - Combine document requirements into one checklist.
 - Remove duplicate document entries.
@@ -122,9 +131,9 @@ KrishiYojana provides one natural-language interface that retrieves relevant sch
 | LLM Provider | Groq |
 | Agent Framework | LangGraph |
 | RAG Architecture | Retrieval-Augmented Generation |
-| Embedding Model | all-MiniLM-L6-v2 |
-| Embedding Runtime | FastEmbed |
-| Offline Embedding Tools | SentenceTransformers |
+| Embedding Model | sentence-transformers/all-MiniLM-L6-v2 |
+| Runtime Query Embeddings | FastEmbed |
+| Offline Document Embeddings | SentenceTransformers |
 | Vector Database | ChromaDB |
 | Data Processing | Pandas |
 | Numerical Processing | NumPy |
@@ -137,10 +146,11 @@ KrishiYojana provides one natural-language interface that retrieves relevant sch
 | CI/CD | GitHub Actions |
 | Deployment Platform | Render |
 
-# 5. Complete Project Folder Structure
+# 5. Selected Project Folder Structure
 
 ```text
 Gen-AI-Examate/
+├── PROGRESS.md
 ├── .github/workflows/ci.yml
 ├── analysis/
 │   ├── __init__.py
@@ -178,7 +188,9 @@ Gen-AI-Examate/
 │   └── sample_records.py
 ├── docs/
 │   ├── DAILY_PROGRESS.md
+│   ├── demo_rehearsal.md
 │   ├── how_llms_work.md
+│   ├── interview.md
 │   ├── resume.md
 │   └── user_questions.md
 ├── eval/
@@ -198,13 +210,9 @@ Gen-AI-Examate/
 │   ├── task_prompt_1.txt
 │   └── task_prompt_2.txt
 ├── screenshots/
-├── tests/
-│   ├── test_day11.py
-│   ├── test_embeddings.py
-│   ├── test_production_metrics.py
-│   ├── test_response_cache.py
-│   ├── test_ui_agent.py
-│   └── test_ui_features.py
+├── scripts/
+│   └── measure_production.py
+├── tests/                         # Automated tests
 ├── ui/
 │   ├── __init__.py
 │   ├── agent_api.py
@@ -233,9 +241,12 @@ Gen-AI-Examate/
 └── test_rejection.py
 ```
 
-Local `.env` files, virtual environments, generated ChromaDB data, and
-`ui/feedback.json` are local data and must not be included in commits. Keep
-credentials outside the source tree.
+This is a selected structure, not an exhaustive listing of every test and
+support file. Local `.env` files, virtual environments, generated ChromaDB
+data, and `ui/feedback.json` are excluded from new commits. The feedback file
+was already tracked in the repository; Day 14 removed it from the Git index
+without deleting the local runtime file. Keep credentials outside the source
+tree.
 
 # 6. Folder and File Description
 
@@ -962,29 +973,36 @@ checked during this measurement task.
 flowchart LR
     Farmer[Farmer / User] --> UI[Streamlit User Interface]
     UI --> API[FastAPI Backend]
-    API --> Ask[/ask]
-    API --> Agent[/agent]
+    API --> Ask[/ask endpoint]
+    API --> Agent[/agent endpoint]
 
-    Ask --> Records[Scheme Records]
-    Ask --> Embed[FastEmbed]
+    Ask --> RecordCheck{Scheme name occurs in question?}
+    RecordCheck -->|Yes| Records[Structured scheme records]
+    RecordCheck -->|No| Embed[FastEmbed query embedding]
     Embed --> Chroma[(ChromaDB)]
-    Chroma --> Groq[Groq LLM]
-    Records --> Response[Grounded Response]
+    Chroma --> Context[Top-three retrieved chunks]
+    Context --> Groq[Groq-hosted LLM]
+    Records --> Response[Answer and source metadata]
     Groq --> Response
     Response --> UI
 
     Agent --> Graph[LangGraph Workflow]
-    Graph --> Tools{Tool Selection}
-    Tools --> RAG[RAG Search]
-    Tools --> Eligibility[Eligibility Rules]
+    Graph --> Select{Keyword-based tool selection}
+    Select --> Approval[Human approval interrupt]
+    Approval -->|Rejected| Stop[Stop]
+    Approval -->|Approved| Execute[Execute selected tool]
+    Execute -->|RAG selected| RAG[RAG search]
+    Execute -->|Eligibility selected| Eligibility[Demonstration rules]
     RAG --> Embed
-    Eligibility --> Validation[Farmer Validation]
-    Graph --> Approval[Human Approval]
-    Approval -->|Approved| Execute[Execute Tool]
-    Approval -->|Rejected| Stop[Stop Execution]
-    Execute --> Groq
-    Execute --> UI
+    Eligibility --> UI
 ```
+
+`/ask` checks a direct named-scheme document request against structured
+records before using RAG; any exact scheme-name match returns that record's
+document checklist, even when the question asks about a different detail.
+The agent's eligibility rules are demonstration
+rules, not authoritative government decisions. LangGraph approval state is
+currently held by an in-memory checkpointer.
 
 # 9. API Endpoints
 
@@ -1196,9 +1214,9 @@ Run Pytest:
 
 python -m pytest -v
 
-Compile the main application modules:
+Compile application, UI, and test modules:
 
-python -m compileall -q app/
+python -m compileall -q app ui tests
 
 Build the Docker image:
 
@@ -1207,6 +1225,14 @@ docker build -t krishiyojana:ci .
 The Day 9 eligibility and agent test results were 6/6 passed.
 
 Production API and workflow tests completed on Day 12 are documented above.
+
+Day 14 validation added ephemeral ChromaDB retrieval/citation tests, unsupported
+and failed-retrieval cases, invalid agent approval/resume cases, frontend
+transport-error tests, and an explicit Groq timeout error. Latest local checks:
+`python -m pytest -v` — **77 passed**; `python -m ruff check .` and
+`python -m compileall -q app ui tests` — **passed**. These tests do not establish
+Marathi-English, financial-year-aware retrieval, exact GR identification, or
+production Render metrics.
 
 # 15. Continuous Integration
 
@@ -1274,13 +1300,14 @@ It points to the existing backend and does not create or redeploy a backend:
 | Build command | `pip install -r requirements-ui.txt` |
 | Start command | `streamlit run ui/app.py --server.address 0.0.0.0 --server.port $PORT` |
 | Environment variable | `API_URL=https://gen-ai-examate.onrender.com` |
-| Deployment branch | `feature/day11-ci-deployment` |
+| Deployment branch | Not declared in `render.yaml`; confirm the connected branch in Render |
 
 The following are the existing service configuration details; do not create a
 duplicate service if it is already active:
 
 1. In the Render Dashboard, choose **New + → Web Service** and connect this repository.
-2. Select `feature/day11-ci-deployment`; leave the Root Directory blank.
+2. Select the branch containing the intended UI code; the blueprint does not
+   declare a branch. Leave the Root Directory blank.
 3. Set the service name to `krishiyojana-ui`, Runtime to Python, and Plan to Free.
 4. Enter the build and start commands from the table above.
 5. Add `API_URL` with value `https://gen-ai-examate.onrender.com`.
@@ -1289,8 +1316,9 @@ duplicate service if it is already active:
 7. Leave the existing `Gen-AI-Examate` backend service and its credentials
    unchanged.
 
-**Public frontend URL:** https://krishiyojana-ui.onrender.com (provided by the
-project owner; not independently verified here).
+**Public frontend URL:** https://krishiyojana-ui.onrender.com. A read-only
+request returned HTTP 200 on 23 November 2026; this verifies page availability,
+not the chat, approval, feedback, or Document Bag workflows.
 
 ## Demo
 
@@ -1314,9 +1342,10 @@ Demo video recording and public link will be added after the final project demon
 
 **Day 13 status (updated 23 November 2026):** Production-readiness code,
 automated tests, documentation, Docker build, and GitHub Actions validation are
-complete. Client-observed production timings are recorded below; Render
-server-latency, cache-event, and Groq-token log measurements, independent
-frontend availability verification, and the demo recording remain pending.
+complete for that checkpoint. Client-observed production timings are recorded
+below; Render server-latency, cache-event, and Groq-token log measurements and
+the demo recording remain pending. A Day 14 read-only request later returned
+HTTP 200 from the frontend URL; its interactive workflows remain unverified.
 
 ### Production Notes
 
@@ -1392,13 +1421,12 @@ requests without exposing question content.
 
 | Component | Verification Result |
 |---|---|
-| Existing Render backend | Deployed; latest read-only check below |
-| Latest `GET /health` (23 Nov 2026) | HTTP 200; `status=healthy`; `vector_database=true`; `embedding_model=true` |
-| Agent in latest health snapshot | Not initialized (`agent=false`); the agent graph is initialized lazily when requested |
-| Latest `GET /records` (23 Nov 2026) | HTTP 200; 19 scheme records |
+| Existing Render backend | Deployment is documented from prior checks; read-only endpoint checks were repeated on 23 Nov 2026 |
+| `GET /health` (23 Nov 2026) | A later retry returned HTTP 200; `status=healthy`; `vector_database=true`; `embedding_model=false`; `agent=false`; model and agent are lazy-initialized |
+| `GET /records` (23 Nov 2026) | HTTP 200 |
 | Day 12 production workflow checks | RAG, citations, Groq, FastEmbed, and approval/resume were previously recorded as passing |
 | Day 13 GitHub Actions | Passed; full pytest suite reported 55 passed; Docker build succeeded |
-| Public Streamlit service | `https://krishiyojana-ui.onrender.com` provided by owner; not independently verified in this task |
+| Public Streamlit service | `https://krishiyojana-ui.onrender.com` returned HTTP 200; user workflows were not independently checked |
 | Production latency, token and cache metrics | Pending Render log measurement |
 
 Latest read-only health response observed on 23 November 2026:
@@ -1407,13 +1435,15 @@ Latest read-only health response observed on 23 November 2026:
   "status": "healthy",
   "application": "KrishiYojana",
   "vector_database": true,
-  "embedding_model": true,
+  "embedding_model": false,
   "agent": false,
   "initialization_error": null
 }
 
-The current health response confirms that the backend, vector database, and
-FastEmbed model respond. It does not by itself verify agent execution.
+The successful health response confirms that the API and vector database
+responded at that check. `embedding_model=false` and `agent=false` show those
+components were not initialized at the time. It does not verify live RAG
+generation or agent execution.
 
 # 18. Git and GitHub Commands
 
@@ -1456,13 +1486,19 @@ https://github.com/Adityahon3344/Gen-AI-Examate
 3. AI-generated information should be checked against official sources for important decisions.
 4. LangGraph MemorySaver currently stores workflow state in memory and is not persistent across application restarts.
 5. Exact Render CPU and memory consumption could not be confirmed on the free plan because detailed metrics were restricted.
-6. The backend is publicly deployed; the project owner provided `https://krishiyojana-ui.onrender.com` as the frontend URL, but it has not been independently checked here.
-7. Some scheme records contain general or component-specific information that should be validated against current official guidance.
+6. The current RAG index stores source, title, and page only; it does not verify exact GR identifiers or preserve official URLs for indexed chunks.
+7. Scheme/year/effective-date and supersession metadata are not indexed, so old and current rules are not safely separated by retrieval.
+8. Marathi-English mixed-language retrieval has not been validated; the configured embedding model has not been evaluated for this use.
+9. The checked local corpus contains two PDFs and one HTML page snapshot, but no separate Benefit PDF. The HTML snapshot states that first-come, first-served selection applies “from 2025–26 onwards”; it has no capture or notice issue date, and its wording does not say the rule applied only in 2025–26.
+10. PDF extraction is text-based and does not perform OCR; extraction quality and page metadata can be incomplete.
+11. The public Streamlit URL returned HTTP 200 on 23 November 2026, but its interactive workflows were not independently verified.
+12. `/ask` returns the required-document list whenever a scheme name matches a structured record; it does not first classify whether the user actually asked about documents.
+13. Some scheme records contain general or component-specific information that should be validated against current official guidance.
 
 # 20. Future Enhancements
 
-- Independently verify frontend availability and add a demo video.
-- Add Marathi and other regional language support.
+- Rehearse the demo twice, record/publish it, and independently verify interactive frontend workflows.
+- Add and evaluate Marathi-English mixed-language retrieval.
 - Expand the verified agricultural scheme knowledge base.
 - Add more scheme-specific eligibility rules.
 - Improve RAG retrieval accuracy.
@@ -1470,7 +1506,7 @@ https://github.com/Adityahon3344/Gen-AI-Examate
 - Implement persistent agent checkpoint storage.
 - Integrate official government data sources.
 - Add farmer profile management.
-- Improve source citation and answer verification.
+- Add exact GR metadata and citations, plus scheme/year/effective-date-aware retrieval.
 - Introduce multilingual voice-based interaction.
 - Improve frontend usability for farmers.
 - Add more automated tests and RAG evaluation scenarios.
@@ -1483,7 +1519,11 @@ The project progresses from basic Python programming and structured data managem
 
 The project also incorporates human-in-the-loop approval to provide greater control over agent tool execution.
 
-The FastAPI backend is successfully deployed on Render, and its health, RAG, records, search, and LangGraph agent workflows have been tested in production.
+Prior Day 12 notes documented production checks for backend health, RAG,
+records, search, and LangGraph approval. On Day 14, read-only checks returned
+HTTP 200 for backend health, records, and the public frontend page; live RAG
+generation, agent execution, and interactive frontend workflows were not
+retested.
 
 The overall goal is to develop a reliable, transparent, and user-friendly AI assistant that helps Maharashtra farmers understand agricultural government schemes and their requirements.
 

@@ -1,3 +1,3 @@
-- Built KrishiYojana with a FastAPI backend and Streamlit interface, deploying the existing API backend to Render while preparing a separate frontend service.
+- Built KrishiYojana with a FastAPI backend deployed to Render and a separate Streamlit Render service configuration; the public frontend returned HTTP 200 on 23 November 2026, but its interactive workflows were not verified.
 - Implemented source-grounded RAG with FastEmbed and ChromaDB; verified 136 locally indexed document chunks, two source PDFs, and 19 scheme records.
 - Integrated Groq with a human-approval LangGraph agent and added request-correlated API latency, cache, and token-usage monitoring with automated coverage for approval, error responses, and cache behavior.

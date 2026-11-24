@@ -5,7 +5,10 @@ from types import SimpleNamespace
 from unittest.mock import Mock
 from uuid import UUID
 
+import httpx
+import pytest
 from fastapi.testclient import TestClient
+from groq import APITimeoutError
 
 from app import llm, main
 from app.request_context import current_request_id, request_id_context
@@ -202,6 +205,27 @@ def test_groq_usage_unavailable_is_correlated(caplog, monkeypatch):
     assert answer == "Answer"
     assert usage is None
     assert "Groq token usage unavailable request_id=groq-no-usage-7" in caplog.text
+
+
+def test_groq_timeout_has_a_specific_actionable_error(monkeypatch):
+    fake_client = SimpleNamespace(
+        chat=SimpleNamespace(
+            completions=SimpleNamespace(
+                create=Mock(
+                    side_effect=APITimeoutError(
+                        request=httpx.Request(
+                            "POST",
+                            "https://api.groq.com/openai/v1/chat/completions",
+                        )
+                    )
+                ),
+            )
+        )
+    )
+    monkeypatch.setattr(llm, "get_groq_client", lambda: fake_client)
+
+    with pytest.raises(RuntimeError, match="Groq request timed out"):
+        llm.generate_response_with_usage("prompt", "system")
 
 
 def test_cache_events_and_groq_call_are_correlated_to_each_request(

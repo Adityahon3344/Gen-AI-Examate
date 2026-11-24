@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 from groq import (
     APIConnectionError,
     APIStatusError,
+    APITimeoutError,
     AuthenticationError,
     Groq,
     RateLimitError,
@@ -56,6 +57,10 @@ def generate_response_with_usage(
     except RateLimitError as error:
         raise RuntimeError(
             "Groq rate limit reached. Wait before trying again."
+        ) from error
+    except APITimeoutError as error:
+        raise RuntimeError(
+            "Groq request timed out. Please try again."
         ) from error
     except APIConnectionError as error:
         raise RuntimeError(
