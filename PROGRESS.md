@@ -18,7 +18,7 @@ replace the historical entries in [`docs/DAILY_PROGRESS.md`](docs/DAILY_PROGRESS
 | Groq timeout handling | Explicit `APITimeoutError` mapping added and regression-tested; existing request ID, latency, cache, and token-usage coverage retained |
 | Local pytest, Ruff, and compileall checks | `python -m pytest -v`: 77 passed; Ruff and compileall passed; two existing deprecation warnings |
 | Deployment availability spot-check | On 23 November 2026, Streamlit URL and a later backend `/health` retry returned HTTP 200; ChromaDB was available, while embedding model and agent were lazy/uninitialized; `/records` returned HTTP 200 |
-| Existing `final` tag status | The annotated tag remains unchanged locally and on `origin`, pointing to `efd116e`; it does not include the Day 14 commit `e8e4693` |
+| Existing `final` tag preserved per owner choice | The annotated tag remains unchanged locally and on `origin`, pointing to `efd116e`; it does not include the Day 14 commits `e8e4693` and `d46585d` |
 
 ## Open or blocked
 
@@ -31,10 +31,9 @@ replace the historical entries in [`docs/DAILY_PROGRESS.md`](docs/DAILY_PROGRESS
 | Verify live agent approval and live RAG behavior for the final demo | Open — owner action | No live AI/agent request was made during this review; automated tests use mocks or ephemeral local fixtures |
 | Measure Render server latency, cache hit/miss totals, and Groq token usage | Open — external access | Requires correlated entries from Render Logs; local tests and client timings do not establish these production values |
 | Run CI for the final changes | Open — repository action | Day 14 commit `e8e4693` was pushed to `feature/day11-ci-deployment`; the workflow runs on pushes to `main`/`master` or PRs targeting them, and no new run was triggered |
-| Include the Day 14 commit in `final` | Pending tag decision | The existing annotated tag is already present locally and on `origin`; moving it requires replacing the tag reference, so it remains unchanged pending explicit confirmation |
 | Record/publish the demo video | Open — owner action | Existing documentation leaves the recording and public link pending; no recording was made here |
 
-Both rehearsal checklists remain unchecked. The existing `final` tag was not
-moved and points to `efd116e`, before the Day 14 commit. Do not mark the
-rehearsals or other evidence-dependent tasks complete without performing and
-verifying them.
+Both rehearsal checklists remain unchecked. Per the owner's choice, the
+existing `final` tag was not moved and points to `efd116e`, before the Day 14
+commits. Do not mark the rehearsals or other evidence-dependent tasks complete
+without performing and verifying them.
